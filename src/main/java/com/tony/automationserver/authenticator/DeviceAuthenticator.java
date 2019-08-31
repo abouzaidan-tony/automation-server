@@ -1,5 +1,6 @@
 package com.tony.automationserver.authenticator;
 
+import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.client.Device;
 import com.tony.automationserver.client.User;
@@ -32,6 +33,9 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         }
         if(d == null)
             return null;
+
+        ClientSession session = ClientSession.getUserSessions().get(c.id);
+        session.setClient(c);
         
         return d;
     }
