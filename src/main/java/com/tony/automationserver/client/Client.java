@@ -11,7 +11,7 @@ import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
 public abstract class Client extends SQLObject {
 
     @PrimaryKey
-    @Property(name="id", type=SQLTypes.String)
+    @Property(name="id", type=SQLTypes.Long)
     public String id;
 
     public Client() {}
