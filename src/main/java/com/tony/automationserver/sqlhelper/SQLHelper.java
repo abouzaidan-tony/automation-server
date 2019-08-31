@@ -17,6 +17,7 @@ public class SQLHelper {
     private SQLHelper(){}
 
     public enum SQLTypes{
+        Long,
         Integer,
         String,
         Date,
@@ -78,7 +79,9 @@ public class SQLHelper {
 
         for(int i=0; i<parameters.length; i++)
         {
-        	if(parameters[i] instanceof Integer)
+            if (parameters[i] instanceof Long)
+                preparedStmt.setLong(i+1, (Long) parameters[i]);
+        	else if(parameters[i] instanceof Integer)
                 preparedStmt.setInt(i+1, (Integer) parameters[i]);
             else if (parameters[i] instanceof String)
             	preparedStmt.setString(i+1, (String)parameters[i]);
@@ -107,6 +110,9 @@ public class SQLHelper {
             {
             	Object obj = null;
                 switch (resultTypes[i]){
+                    case Long:
+                        obj = rs.getLong(i+1);
+                        break;
                     case Integer:
                     	obj = rs.getInt(i+1);
                         break;
