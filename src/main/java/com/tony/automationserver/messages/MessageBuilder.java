@@ -30,7 +30,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder setOrigin(Client origin){
-        this.origin = origin.id;
+        this.origin = origin.getKey();
         return this;
     }
 

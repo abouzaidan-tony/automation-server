@@ -2,8 +2,6 @@ package com.tony.automationserver.client;
 
 import java.util.HashMap;
 
-import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
-import com.tony.automationserver.sqlhelper.annotation.ManyToOne;
 import com.tony.automationserver.sqlhelper.annotation.Property;
 import com.tony.automationserver.sqlhelper.annotation.Table;
 
@@ -13,14 +11,13 @@ public class Device extends Client {
     @Property(name = "device_key")
     public String deviceKey;
 
-    @Property(name = "connected", type = SQLTypes.Boolean)
-    public boolean connected;
-
-    @ManyToOne(targetEntity = User.class, inverserdBy = "user_id")
-    public User userClient;
-
     public Device(HashMap<String, Object> map) throws Exception {
         super(map);
+    }
+
+    @Override
+    public String getKey() {
+        return deviceKey;
     }
 
 }

@@ -4,21 +4,23 @@ import java.net.Socket;
 import java.util.HashMap;
 
 import com.tony.automationserver.client.Client;
+import com.tony.automationserver.client.User;
+import com.tony.automationserver.sqlhelper.EntityManager;
 import com.tony.automationserver.statemachine.StateMachine;
 import com.tony.automationserver.streams.BytesStreamManager;
 
 public class ClientSession extends Session {
 
-    private static HashMap<String, ClientSession> userSessions;
-    private static HashMap<String, ClientSession> deviceSessions;
+    private static HashMap<Long, ClientSession> userSessions;
+    private static HashMap<Long, ClientSession> deviceSessions;
 
     private Client client;
 
-    public static HashMap<String, ClientSession> getUserSessions() {
+    public static HashMap<Long, ClientSession> getUserSessions() {
         return userSessions;
     }
 
-    public static HashMap<String, ClientSession> getDevicesSessions() {
+    public static HashMap<Long, ClientSession> getDevicesSessions() {
         return deviceSessions;
     }
 
@@ -45,5 +47,16 @@ public class ClientSession extends Session {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    @Override
+    public void OnSessionClosed() {
+        client.connected = false;
+        EntityManager.GetInstance().Update(client);
+        EntityManager.GetInstance().flush();
+        if(client instanceof User)
+            userSessions.remove(client.id);
+        else
+            deviceSessions.remove(client.id);
     }
 }

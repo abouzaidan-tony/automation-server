@@ -1,5 +1,6 @@
 package com.tony.automationserver.authenticator;
 
+import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.client.User;
 import com.tony.automationserver.sqlhelper.EntityManager;
@@ -9,9 +10,34 @@ public class UserAuthenticator implements Authenticator<Client> {
 
     @Override
     public Client Authenticate(byte[] data) {
-        Client c = EntityManager.GetInstance().GetRepository(User.class)
-                .findOneBy(new FilterTuple("token", new String(data, 1, data.length - 1)));
-        return c;
+        if (data.length != 41)
+            return null;
+        String userToken = new String(data, 1, 30);
+        String deviceCode = new String(data, 31, 10);
+
+        Account account = EntityManager.GetInstance().GetRepository(Account.class)
+                .findOneBy(new FilterTuple("token", userToken));
+
+        if (account == null)
+            return null;
+
+        User d = null;
+
+        for (Client uD : account.users) {
+            if (uD.getKey().equals(deviceCode)) {
+                d = (User) uD;
+                break;
+            }
+        }
+        if (d == null)
+            return null;
+
+        d.connected = true;
+
+        EntityManager.GetInstance().Update(d);
+        EntityManager.GetInstance().flush();
+
+        return d;
     }
 
 }

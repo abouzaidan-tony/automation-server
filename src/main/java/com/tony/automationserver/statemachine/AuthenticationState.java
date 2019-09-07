@@ -27,12 +27,10 @@ public class AuthenticationState extends State {
 
         if(data[0] == 0x55){
             ClientSession.getUserSessions().put(c.id, session);
-			session.setSessionEndedListener(s -> ClientSession.getUserSessions().remove(session.getClient().id));
             return new CommandState(session, new UserMessageAnalyzer());
         }
 
         ClientSession.getDevicesSessions().put(c.id, session);
-        session.setSessionEndedListener(s -> ClientSession.getDevicesSessions().remove(session.getClient().id));
         return new CommandState(session, new DeviceMessageAnalyzer());
     }
 

@@ -1,42 +1,16 @@
 package com.tony.automationserver.command;
 
-import java.io.IOException;
+import java.util.List;
 
-import com.tony.automationserver.ClientSession;
-import com.tony.automationserver.Session;
-import com.tony.automationserver.client.Device;
-import com.tony.automationserver.client.User;
-import com.tony.automationserver.exception.DeviceNotConnectedException;
-import com.tony.automationserver.exception.DeviceNotFoundException;
-import com.tony.automationserver.messages.Message;
-import com.tony.automationserver.messages.MessageBuilder;
-import com.tony.automationserver.messages.Message.MessageType;
+import com.tony.automationserver.client.Account;
+import com.tony.automationserver.client.Client;
+import com.tony.automationserver.sqlhelper.EntityManager;
 
-public class DeviceMessageAnalyzer implements MessageAnalyzer {
+public class DeviceMessageAnalyzer extends AbstractMessageAnalyzer {
 
     @Override
-    public void Process(Message message) {
-		Device device = (Device) message.getClient();
-        User c = device.userClient;
-        if(!c.id.equals(message.getOrigin()))
-            throw new DeviceNotFoundException();
-
-        Session session = ClientSession.getUserSessions().get(c.id);
-
-        if (session == null)
-            throw new DeviceNotConnectedException();
-
-        message.setOrigin(device.id);
-        try {
-            session.sendMessage(message.toByteArray());
-        } catch (IOException ex) {
-            Message m = new MessageBuilder().setKeepAlive(true).setOrigin(device)
-                    .setMessage("Could not forward message").setMessageType(MessageType.ERROR)
-                    .build();
-            try {
-                ClientSession.getDevicesSessions().get(device.id).sendMessage(m.toByteArray());
-            } catch (Exception exx) {
-            }
-        }
-	}
+    public List<Client> getCandidates(Client client) {
+        Account account = EntityManager.GetInstance().GetRepository(Account.class).find(client.account.id);
+        return account.users;
+    }
 }

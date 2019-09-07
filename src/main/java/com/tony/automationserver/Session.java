@@ -15,7 +15,6 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
     private Socket socket;
     private OutputStream out;
     private OnDataReceivedListener dataReceivedListener;
-    private OnSessionEndedListener sessionEndedListener;
     private boolean running;
     private boolean stopListening;
     private StreamManager manager;
@@ -42,14 +41,8 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
         this.dataReceivedListener = dataReceivedListener;
     }
 
-    public void setSessionEndedListener(OnSessionEndedListener sessionEndedListener) {
-        this.sessionEndedListener = sessionEndedListener;
-    }
-
     public void close() {
         running = false;
-        if(sessionEndedListener != null)
-            sessionEndedListener.OnSessionEnded(this);
         try {
             socket.close();
         } catch (Exception ex) {
@@ -57,7 +50,10 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
         }
 
         System.out.println("Session Closed");
+        OnSessionClosed();
     }
+
+    public abstract void OnSessionClosed();
 
     public boolean isRunning() {
         return running;

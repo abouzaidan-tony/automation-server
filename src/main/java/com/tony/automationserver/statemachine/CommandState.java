@@ -27,7 +27,7 @@ public class CommandState extends State {
             message = new Message(data, session.getClient());
             
             if(message.getMessageType() == MessageType.ECHO) {
-                message.setOrigin(session.getClient().id);
+                message.setOrigin(session.getClient().getKey());
                 session.sendMessage(message.toByteArray());
             } else {
                 analyzer.Process(message);
@@ -40,7 +40,7 @@ public class CommandState extends State {
         }catch(IllegalArgumentException ex){
 
             message = new MessageBuilder()
-                .setOrigin(session.getClient().id)
+                .setOrigin(session.getClient().getKey())
                 .setMessage("Wrong Message Format")
                 .setMessageType(MessageType.ERROR)
                 .build();
