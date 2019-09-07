@@ -17,7 +17,7 @@ public class FinalState extends State {
 
     @Override
     public boolean instantExecution() {
-        return false;
+        return true;
     }
 
 }
