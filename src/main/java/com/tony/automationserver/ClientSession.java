@@ -51,6 +51,8 @@ public class ClientSession extends Session {
 
     @Override
     public void OnSessionClosed() {
+        if(client == null)
+            return;
         client.connected = false;
         EntityManager.GetInstance().Update(client);
         EntityManager.GetInstance().flush();
