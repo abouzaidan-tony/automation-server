@@ -10,10 +10,10 @@ public class UserAuthenticator implements Authenticator<Client> {
 
     @Override
     public Client Authenticate(byte[] data) {
-        if (data.length != 41)
+        if (data.length != 36)
             return null;
         String userToken = new String(data, 1, 30);
-        String deviceCode = new String(data, 31, 10);
+        String deviceCode = new String(data, 31, 5);
 
         Account account = EntityManager.GetInstance().GetRepository(Account.class)
                 .findOneBy(new FilterTuple("token", userToken));

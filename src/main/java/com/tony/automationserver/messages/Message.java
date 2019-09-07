@@ -28,13 +28,13 @@ public class Message {
     }
 
     public Message(byte[] buffer, Client client) {
-        if(buffer.length < 12)
+        if(buffer.length < 7)
             throw new IllegalArgumentException();
         this.type = buffer[0];
         this.keepAlive = buffer[1];
-        this.origin = new String(buffer, 2, 10);
+        this.origin = new String(buffer, 2, 5);
         iniMType(type);
-        data = Arrays.copyOfRange(buffer, 12, buffer.length);
+        data = Arrays.copyOfRange(buffer, 7, buffer.length);
         this.client = client;
     }
 
@@ -94,15 +94,15 @@ public class Message {
     }
 
     public byte [] toByteArray(){
-        int totalLength = 12 + data.length;
+        int totalLength = 7 + data.length;
         byte[] buffer = new byte[totalLength];
         buffer[0] = type;
         buffer[1] = keepAlive;
         byte[] idBuffer = origin.getBytes();
-        for(int i=0; i<10; i++)
+        for(int i=0; i<5; i++)
             buffer[i+2] = i < idBuffer.length ? idBuffer[i] : 0;
         for(int i=0; i<data.length; i++)
-            buffer[i+12] = data[i];
+            buffer[i+7] = data[i];
         return buffer;
     }
 
