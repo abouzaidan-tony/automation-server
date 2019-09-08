@@ -33,6 +33,9 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         if(d == null)
             return null;
 
+        if(d.connected == true)
+            return null;
+
         d.connected = true;
         
         EntityManager.GetInstance().Update(d);

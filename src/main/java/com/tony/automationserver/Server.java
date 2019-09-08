@@ -4,10 +4,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import com.tony.automationserver.sqlhelper.SQLHelper;
+
 public class Server 
 {
     public static void main( String[] args ) throws IOException
     {
+
+        SQLHelper.GetInstance().ExecuteNonQuery("UPDATE user SET connected = 0", null);
+        SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);
+
         ServerSocket listener = new ServerSocket(9909);
 
         try {
