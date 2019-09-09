@@ -16,6 +16,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
 
     public abstract List<Client> getCandidates(Client client);
+    public abstract Session getSessionById(long id);
 
     @Override
     public void Process(Message message) {
@@ -46,7 +47,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
     
     protected final void sendMessage(Message message, Client c, Client origin){
 
-        Session session = ClientSession.getDevicesSessions().get(c.id);
+        Session session = getSessionById(c.id);
 
         if (session == null)
             throw new DeviceNotConnectedException();
