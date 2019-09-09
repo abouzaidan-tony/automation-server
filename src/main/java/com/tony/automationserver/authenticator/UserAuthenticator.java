@@ -42,5 +42,4 @@ public class UserAuthenticator implements Authenticator<Client> {
 
         return d;
     }
-
 }
