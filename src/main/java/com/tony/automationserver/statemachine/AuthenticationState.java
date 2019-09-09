@@ -8,7 +8,6 @@ import com.tony.automationserver.client.Client;
 import com.tony.automationserver.command.DeviceMessageAnalyzer;
 import com.tony.automationserver.command.UserMessageAnalyzer;
 
-
 public class AuthenticationState extends State {
 
     public AuthenticationState(ClientSession session) {
@@ -18,8 +17,19 @@ public class AuthenticationState extends State {
     @Override
     public State Process() {
         byte[] data = getData();
-        Authenticator<Client> auth =  data[0] == 0x55 ? new UserAuthenticator() : new DeviceAuthenticator();
+        Authenticator<Client> auth = data[0] == 0x55 ? new UserAuthenticator() : new DeviceAuthenticator();
         Client c = auth.Authenticate(data);
+
+        if(c == null)
+            session.writeByte((byte) 0x00);
+        else
+            session.writeByte((byte) 0x01);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
+
+        
         if(c == null)
             return new FinalState(session);
         

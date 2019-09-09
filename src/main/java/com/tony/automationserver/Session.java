@@ -70,9 +70,19 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
             out.write(manager.formatStream(msg));
         } catch (IOException e) {
             running = false;
+            close();
             throw e;
         }
 
+    }
+
+    public void writeByte(byte b){
+        try {
+            out.write(b);
+        } catch (IOException e){
+            running = false;
+            close();
+        }
     }
 
     public final void run() {
