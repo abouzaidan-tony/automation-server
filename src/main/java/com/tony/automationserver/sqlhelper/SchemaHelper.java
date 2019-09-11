@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
+import com.tony.automationserver.sqlhelper.annotation.ManyToMany;
 import com.tony.automationserver.sqlhelper.annotation.ManyToOne;
 import com.tony.automationserver.sqlhelper.annotation.OneToMany;
 import com.tony.automationserver.sqlhelper.annotation.PrimaryKey;
@@ -21,8 +22,10 @@ public class SchemaHelper {
     public static class PropertyMap {
         public final String fieldName;
         public final String columnName;
+        public final String inversedColumnName;
         public final SQLTypes type;
         public final boolean isPrimary;
+        public final String tableName;
         public final Class<? extends SQLObject> clazz;
 
         public PropertyMap(String fieldName, String columnName, SQLTypes type, boolean isPrimary){
@@ -31,6 +34,8 @@ public class SchemaHelper {
             this.type = type;
             this.isPrimary = isPrimary;
             clazz = null;
+            inversedColumnName = null;
+            tableName = null;
         }
 
         public PropertyMap(String fieldName, String columnName, Class<? extends SQLObject> clazz) {
@@ -39,6 +44,8 @@ public class SchemaHelper {
             type = null;
             isPrimary = false;
             this.clazz = clazz;
+            inversedColumnName = null;
+            tableName = null;
         }
 
         public PropertyMap(String fieldName, String columnName, Class<? extends SQLObject> clazz, SQLTypes type) {
@@ -47,6 +54,18 @@ public class SchemaHelper {
             this.type = type;
             isPrimary = false;
             this.clazz = clazz;
+            inversedColumnName = null;
+            tableName = null;
+        }
+
+        public PropertyMap(String fieldName, String columnName, String inversedColumnName, String tableName, Class<? extends SQLObject> clazz, SQLTypes type) {
+            this.fieldName = fieldName;
+            this.columnName = columnName;
+            this.type = type;
+            isPrimary = false;
+            this.clazz = clazz;
+            this.inversedColumnName = inversedColumnName;
+            this.tableName = tableName;
         }
 
         @Override
@@ -62,6 +81,7 @@ public class SchemaHelper {
         Properties,
         OneToMany,
         ManyToOne,
+        ManyToMany
     }
 
     private static HashMap<CacheKeys, HashMap<Class<? extends SQLObject>, List<PropertyMap>>> cachedData;
@@ -119,7 +139,15 @@ public class SchemaHelper {
 
     public static <T extends SQLObject> List<PropertyMap> getManyToOneColumns(Class<T> clazz) {
         return getAnnotatedColumns(clazz, ManyToOne.class, CacheKeys.ManyToOne,
-                (f, p) -> new PropertyMap("inversedBy-".concat(f.getName()), p.inverserdBy(), p.targetEntity(), SchemaHelper.getPrimaryKey(p.targetEntity()).type));
+                (f, p) -> new PropertyMap("inversedBy-".concat(f.getName()), 
+                    p.inverserdBy(), 
+                    p.targetEntity(), 
+                    SchemaHelper.getPrimaryKey(p.targetEntity()).type));
+    }
+
+    public static <T extends SQLObject> List<PropertyMap> getManyToManyColumns(Class<T> clazz) {
+        return getAnnotatedColumns(clazz, ManyToMany.class, CacheKeys.ManyToMany,
+                (f, p) -> new PropertyMap(f.getName(), p.mappedBy(), p.inversedBy(), p.joinTable(), p.targetEntity(), SQLTypes.Long));
     }
 
     public static <T extends SQLObject> List<PropertyMap> getCombinedColumns(Class<T> clazz)

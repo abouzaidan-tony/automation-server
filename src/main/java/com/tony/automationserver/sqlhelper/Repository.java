@@ -11,6 +11,7 @@ import com.tony.automationserver.sqlhelper.SQLObject;
 import com.tony.automationserver.sqlhelper.SchemaHelper;
 import com.tony.automationserver.sqlhelper.SchemaHelper.PropertyMap;
 import com.tony.automationserver.sqlhelper.filter.FilterTuple;
+import com.tony.automationserver.sqlhelper.joins.JoinTuple;
 
 public class Repository<T extends SQLObject> {
 
@@ -21,6 +22,7 @@ public class Repository<T extends SQLObject> {
     }
 
     private LinkedList<FilterTuple> filters;
+    private LinkedList<JoinTuple> joins;
     private int limit;
     private int offset;
     private Class<T> clazz;
@@ -30,6 +32,7 @@ public class Repository<T extends SQLObject> {
         this.limit = 0;
         this.offset = 0;
         this.filters = new LinkedList<>();
+        this.joins = new LinkedList<>();
     }
 
     static <C extends SQLObject> Repository<C> GetRepository(Class<C> clazz) {
@@ -55,6 +58,12 @@ public class Repository<T extends SQLObject> {
         builder.append("FROM ");
         builder.append(SchemaHelper.getTableName(clazz));
 
+        for(JoinTuple var : joins){
+            builder.append(' ');
+            builder.append(var.toString());
+            builder.append(' ');
+        }
+
         if (filters.size() != 0) {
             builder.append(" WHERE ");
             for (FilterTuple var : filters) {
@@ -77,6 +86,12 @@ public class Repository<T extends SQLObject> {
 
         String f_query = builder.toString();
         return f_query;
+    }
+
+    public Repository<T> Join(JoinTuple joinTuple)
+    {
+        joins.add(joinTuple);
+        return this;
     }
 
     public LinkedList<T> findAll() {
@@ -150,6 +165,7 @@ public class Repository<T extends SQLObject> {
                 objs.add(instance);
                 fillOneToManyReferences(instance);
                 fillManyToOneReferences(instance);
+                fillManyToManyReferences(instance);
             }
 
         } catch (Exception ex) {
@@ -176,6 +192,21 @@ public class Repository<T extends SQLObject> {
         for (PropertyMap p : properties) {
             try {
                 obj.setPropertyValue(p.fieldName.substring(11), Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName)));
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+            }
+        }
+    }
+
+    private void fillManyToManyReferences(T obj) {
+        List<PropertyMap> properties = SchemaHelper.getManyToManyColumns(clazz);
+        String myPrimaryKey = SchemaHelper.getPrimaryKey(obj.getClass()).columnName;
+        String myTableName = SchemaHelper.getTableName(obj.getClass());
+        for (PropertyMap p : properties) {
+            try {
+                String targetPrimaryKey = SchemaHelper.getPrimaryKey(p.clazz).columnName;
+                String tableName = SchemaHelper.getTableName(p.clazz);
+                LinkedList<? extends SQLObject> l = Repository.GetRepository(p.clazz).Join(new JoinTuple("INNER JOIN", p.tableName, tableName+"."+targetPrimaryKey +" = " + myTableName + "." + myPrimaryKey)).findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
+                obj.setPropertyValue(p.fieldName, l);
             } catch (IllegalArgumentException | IllegalAccessException e) {
             }
         }
