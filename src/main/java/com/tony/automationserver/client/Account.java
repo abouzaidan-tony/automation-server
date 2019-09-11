@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import com.tony.automationserver.sqlhelper.SQLObject;
 import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
+import com.tony.automationserver.sqlhelper.annotation.ManyToMany;
 import com.tony.automationserver.sqlhelper.annotation.OneToMany;
 import com.tony.automationserver.sqlhelper.annotation.PrimaryKey;
 import com.tony.automationserver.sqlhelper.annotation.Property;
@@ -31,6 +32,9 @@ public class Account extends SQLObject {
 
     @OneToMany(targetEntity = User.class, mappedBy = "account_id")
     public LinkedList<Client> users;
+
+    @ManyToMany(targetEntity = Application.class, mappedBy = "account_id", inversedBy = "app_id", joinTable = "subscriptions")
+    public LinkedList<Application> subscriptions;
 
     public Account(HashMap<String, Object> map) throws Exception {
         super(map);
