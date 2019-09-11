@@ -45,10 +45,13 @@ public class Repository<T extends SQLObject> {
     private String getFetchQuery() {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT ");
+        String tableName = SchemaHelper.getTableName(clazz);
 
         List<PropertyMap> properties = SchemaHelper.getCombinedColumns(clazz);
 
         for (PropertyMap prop : properties) {
+            builder.append(tableName);
+            builder.append('.');
             builder.append(prop.columnName);
             builder.append(',');
             builder.append(' ');
@@ -56,7 +59,7 @@ public class Repository<T extends SQLObject> {
         builder.append("1 ");
 
         builder.append("FROM ");
-        builder.append(SchemaHelper.getTableName(clazz));
+        builder.append(tableName);
 
         for(JoinTuple var : joins){
             builder.append(' ');
@@ -199,13 +202,11 @@ public class Repository<T extends SQLObject> {
 
     private void fillManyToManyReferences(T obj) {
         List<PropertyMap> properties = SchemaHelper.getManyToManyColumns(clazz);
-        String myPrimaryKey = SchemaHelper.getPrimaryKey(obj.getClass()).columnName;
-        String myTableName = SchemaHelper.getTableName(obj.getClass());
         for (PropertyMap p : properties) {
             try {
                 String targetPrimaryKey = SchemaHelper.getPrimaryKey(p.clazz).columnName;
                 String tableName = SchemaHelper.getTableName(p.clazz);
-                LinkedList<? extends SQLObject> l = Repository.GetRepository(p.clazz).Join(new JoinTuple("INNER JOIN", p.tableName, tableName+"."+targetPrimaryKey +" = " + myTableName + "." + myPrimaryKey)).findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
+                LinkedList<? extends SQLObject> l = Repository.GetRepository(p.clazz).Join(new JoinTuple("INNER JOIN", p.tableName, tableName+"."+targetPrimaryKey +" = " + p.tableName + "." + p.inversedColumnName)).findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
                 obj.setPropertyValue(p.fieldName, l);
             } catch (IllegalArgumentException | IllegalAccessException e) {
             }
