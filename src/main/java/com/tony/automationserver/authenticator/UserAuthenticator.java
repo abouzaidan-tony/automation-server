@@ -1,5 +1,6 @@
 package com.tony.automationserver.authenticator;
 
+import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Application;
 import com.tony.automationserver.client.Client;
@@ -46,8 +47,11 @@ public class UserAuthenticator implements Authenticator<Client> {
         if (d == null)
             return null;
 
-        if(d.connected == true)
-            return null;
+        if (d.connected == true) {
+            ClientSession s = ClientSession.getUserSessions().get(d.id);
+            if (s != null)
+                s.close();
+        }
 
         d.connected = true;
 
