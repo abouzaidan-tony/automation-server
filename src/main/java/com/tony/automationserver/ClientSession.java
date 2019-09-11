@@ -60,5 +60,6 @@ public class ClientSession extends Session {
             userSessions.remove(client.id);
         else
             deviceSessions.remove(client.id);
+        client = null;
     }
 }

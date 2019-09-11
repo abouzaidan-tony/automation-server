@@ -42,6 +42,8 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
     }
 
     public void close() {
+        if(!running)
+            return;
         running = false;
         try {
             socket.close();
