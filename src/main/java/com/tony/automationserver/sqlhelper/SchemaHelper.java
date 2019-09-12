@@ -85,8 +85,6 @@ public class SchemaHelper {
     }
 
     private static HashMap<CacheKeys, HashMap<Class<? extends SQLObject>, List<PropertyMap>>> cachedData;
-    // private static HashMap<Class<? extends SQLObject>, List<PropertyMap>> cachedOneToMany;
-    // private static HashMap<Class<? extends SQLObject>, List<PropertyMap>> cachedManyToOne;
     private static HashMap<Class<? extends SQLObject>, String> cachedTableNames;
     private static HashMap<Class<? extends SQLObject>, PropertyMap> cachedPrimaryKeys;
 

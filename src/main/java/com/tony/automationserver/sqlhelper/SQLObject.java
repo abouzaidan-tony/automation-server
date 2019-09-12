@@ -119,21 +119,7 @@ public abstract class SQLObject {
 
     Object getKeyValue() {
         String fieldName = SchemaHelper.getPrimaryKey(this.getClass()).fieldName;
-        Field f = null;
-        Class<?> c = this.getClass();
-        do {
-            try {
-                f = c.getDeclaredField(fieldName);
-                f.setAccessible(true);
-                return f.get(this);
-            } catch (Exception ex) {
-                if (c == null)
-                    break;
-                c = c.getSuperclass();
-            }
-        } while (f == null);
-
-        return null;
+        return getPropertyValue(fieldName);
     }
 
     @Override
