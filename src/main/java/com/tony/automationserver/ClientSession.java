@@ -56,9 +56,6 @@ public class ClientSession extends Session {
         client.connected = false;
         EntityManager.GetInstance().Update(client);
         EntityManager.GetInstance().flush();
-    }
-
-    public void removeFromList(){
         if(client instanceof User)
             userSessions.remove(client.id);
         else

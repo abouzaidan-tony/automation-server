@@ -2,6 +2,9 @@ package com.tony.automationserver;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import com.tony.automationserver.streams.OnMessageReadyListener;
 import com.tony.automationserver.streams.StreamManager;
@@ -10,6 +13,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public abstract class Session extends Thread implements OnMessageReadyListener {
+
+    public static Semaphore lock = new Semaphore(1);
+    public static List<Session> sessions = new LinkedList<>();
 
     private InputStreamReader input;
     private Socket socket;
@@ -31,6 +37,13 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
         } catch (IOException ex) {
             running = false;
         }
+        try {
+            lock.acquire();
+            sessions.add(this);
+            lock.release();
+        } catch (InterruptedException e) {
+        }
+        
     }
 
     public Socket getSocket() {
@@ -42,8 +55,6 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
     }
 
     public synchronized void close() {
-        if(!running)
-            return;
         running = false;
         try {
             socket.close();

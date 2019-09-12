@@ -6,27 +6,23 @@ public class SessionCleaner extends Thread {
 
     @Override
     public void run() {
-        LinkedList<ClientSession> offlineSessions = new LinkedList<>(); 
+        LinkedList<Session> offlineSessions = new LinkedList<>(); 
         while(true){
             try{
                 offlineSessions.clear();
-                for (ClientSession var : ClientSession.getDevicesSessions().values()) {
-                    var.sendMessage(null);
-                    if(!var.isRunning())
-                        offlineSessions.add(var);
+
+                Session.lock.acquire();
+                
+                for(Session session : Session.sessions){
+                    session.sendMessage(null);
+                    if(!session.isRunning())
+                        offlineSessions.add(session);
                 }
 
-                for (ClientSession var : ClientSession.getUserSessions().values()) {
-                    var.sendMessage(null);
-                    if(!var.isRunning())
-                        offlineSessions.add(var);
+                for (Session var : offlineSessions) {
+                    Session.sessions.remove(var);
                 }
-
-                for (ClientSession var : offlineSessions) {
-                    var.removeFromList();
-                }
-
-                offlineSessions.clear();
+                Session.lock.release();
 
                 Thread.sleep(120000);
 
