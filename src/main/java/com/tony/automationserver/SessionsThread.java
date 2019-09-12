@@ -6,21 +6,27 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.Semaphore;
 
-public class SessionsThread extends Thread  implements Comparable<SessionsThread> {
+public class SessionsThread extends Thread implements Comparable<SessionsThread> {
 
     private LinkedList<Session> sessions;
     private Iterator<Session> iterator;
     private Queue<Session> queue;
 
+    private Semaphore halter;
 
     public SessionsThread() {
         sessions = new LinkedList<>();
         queue = new LinkedList<>();
+        halter = new Semaphore(1);
     }
 
     public synchronized void registerSession(Session s) {
+        boolean wasEmpty = queue.size() == 0;
         queue.add(s);
+        if(wasEmpty)
+            halter.release();
     }
     
     public synchronized int getSize(){
@@ -39,15 +45,23 @@ public class SessionsThread extends Thread  implements Comparable<SessionsThread
             try {
 
                 Thread.sleep(2);
+
                 
                 Session session = null;
+
+                boolean isEmpty= true;
 
                 synchronized (this){
                     for (Session s : queue) {
                         sessions.add(s);
                     }
                     queue.clear();
+                    isEmpty = sessions.size() == 0;
                 }
+
+                if(isEmpty)
+                    halter.acquire();
+
 
                 iterator = sessions.iterator();
 
