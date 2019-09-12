@@ -32,13 +32,13 @@ public class SessionsThread extends Thread  implements Comparable<SessionsThread
 
         int length;
         byte[] buffer = new byte[256];
-
+ 
         BufferedInputStream bf = null;
 
         while (true) {
             try {
 
-                Thread.sleep(10);
+                Thread.sleep(2);
                 
                 Session session = null;
 
@@ -91,10 +91,8 @@ public class SessionsThread extends Thread  implements Comparable<SessionsThread
                         if(length < 0)
                             throw new IOException();
                         
-                        System.out.println(buffer);
-        
-                        // if (session.getDataReceivedListener() != null);
-                        //     session.getDataReceivedListener().OnDataReceived(buffer, length);
+                        if (session.getDataReceivedListener() != null);
+                            session.getDataReceivedListener().OnDataReceived(buffer, length);
         
                     } catch (Exception ex) {
                         ex.printStackTrace();
