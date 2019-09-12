@@ -10,7 +10,9 @@ public class Settings {
 	private String _dbase;
 	private String _user;
 	private String _password;
-    private String _port;
+	private String _port;
+	
+	private JSONObject settingsObj;
     
     private boolean init;
 
@@ -47,11 +49,19 @@ public class Settings {
         if (init)
             return;
         init = true;
-		JSONObject settingsObj = SettingsFileHelper.readSettings();
+		settingsObj = SettingsFileHelper.readSettings();
 		_host = settingsObj.getString("host");
 		_dbase = settingsObj.getString("database");
 		_user = settingsObj.getString("user");
 		_password = settingsObj.getString("password");
 		_port = settingsObj.getString("port");
+	}
+
+	public String getString(String key){
+		return settingsObj.getString(key);
+	}
+
+	public int getInt(String key){
+		return settingsObj.getInt(key);
 	}
 }
