@@ -35,6 +35,10 @@ public class Repository<T extends SQLObject> {
         this.joins = new LinkedList<>();
     }
 
+    public static HashMap<Class<? extends SQLObject>, HashMap<Object, SQLObject>> getCaches(){
+        return cachedObjects;
+    }
+
     static <C extends SQLObject> Repository<C> GetRepository(Class<C> clazz) {
         Repository<C> instance = new Repository<C>(clazz);
         if (cachedObjects.get(clazz) == null)
@@ -182,9 +186,9 @@ public class Repository<T extends SQLObject> {
         List<PropertyMap> properties = SchemaHelper.getOneToManyColumns(clazz);
         for (PropertyMap p : properties) {
             try {
-                obj.setPropertyValue(p.fieldName,
-                        Repository.GetRepository(p.clazz).findBy(Arrays.asList(new FilterTuple(p.columnName,
-                                obj.getPropertyValue(SchemaHelper.getPrimaryKey(obj.getClass()).fieldName)))));
+                LinkedList<? extends SQLObject> list =  Repository.GetRepository(p.clazz)
+                            .findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
+                obj.setPropertyValue(p.fieldName, list);
             } catch (IllegalArgumentException | IllegalAccessException e) {
             }
         }

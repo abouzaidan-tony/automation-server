@@ -14,6 +14,12 @@ public class Server
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE user SET connected = 0", null);
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);
 
+        Thread cc = new CacheCleaner();
+        Thread sc = new SessionCleaner();
+
+        cc.start();
+        sc.start();
+
         ServerSocket listener = new ServerSocket(9909);
 
         try {

@@ -41,7 +41,7 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
         this.dataReceivedListener = dataReceivedListener;
     }
 
-    public void close() {
+    public synchronized void close() {
         if(!running)
             return;
         running = false;
@@ -57,17 +57,15 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
 
     public abstract void OnSessionClosed();
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return running;
     }
 
-    public void StopListening(){
+    public void stopListening(){
         stopListening = true;
     }
 
-    public void sendMessage(byte[] msg) throws IOException {
-        if(msg == null)
-            return;
+    public synchronized void sendMessage(byte[] msg) throws IOException {
         try {
             out.write(manager.formatStream(msg));
         } catch (IOException e) {
@@ -78,7 +76,7 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
 
     }
 
-    public void writeByte(byte b){
+    public synchronized void writeByte(byte b){
         try {
             out.write(b);
         } catch (IOException e){
@@ -110,7 +108,9 @@ public abstract class Session extends Thread implements OnMessageReadyListener {
                     dataReceivedListener.OnDataReceived(buffer, length);
 
             } catch (IOException ex) {
-                running = false;
+                synchronized(this){
+                    running = false;
+                }
             }
         }
         close();
