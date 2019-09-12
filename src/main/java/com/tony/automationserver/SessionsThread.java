@@ -84,11 +84,7 @@ public class SessionsThread extends Thread  implements Comparable<SessionsThread
                         }
 
                         if(bf.available() == 0)
-                        {
-                            // bf.close();
-                            bf = null;
                             continue;
-                        }
                         
                         length = input.read(buffer, 0, buffer.length);
         
