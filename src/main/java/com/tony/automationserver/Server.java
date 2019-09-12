@@ -22,11 +22,13 @@ public class Server
 
         ServerSocket listener = new ServerSocket(9909);
 
+        SessionPool pool = SessionPool.getInstance();
+
         try {
             while (true) {
                 Socket socket = listener.accept();
                 ClientSession session = new ClientSession(socket);
-                session.start();
+                pool.addSession(session);
             }
         } finally {
             if (listener != null)

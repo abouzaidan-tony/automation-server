@@ -21,10 +21,9 @@ public class BytesStreamManager extends StreamManager {
         byteArray = new ByteArrayOutputStream();
     }
 
-    public void OnDataReceived(char[] buff, int len) 
+    public void OnDataReceived(byte[] buffer, int len) 
     {
         int offset = 0;
-        byte[] buffer = ChartoByte(buff);
         while (offset < len) 
         {
             switch (state) 
@@ -70,14 +69,6 @@ public class BytesStreamManager extends StreamManager {
                     }
             }
         }
-    }
-
-
-    private static byte[] ChartoByte(char[] charArray){
-        byte[] byteArray = new byte[charArray.length];
-        for(int i=0; i<charArray.length; i++)
-            byteArray[i] = (byte)charArray[i];
-        return byteArray;
     }
 
     public byte[] formatStream(byte[] msg){

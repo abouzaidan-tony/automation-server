@@ -1,5 +1,6 @@
 package com.tony.automationserver;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 public class SessionCleaner extends Thread {
@@ -14,7 +15,10 @@ public class SessionCleaner extends Thread {
                 Session.lock.acquire();
                 
                 for(Session session : Session.sessions){
-                    session.sendMessage(null);
+                    try{
+                        session.sendMessage(null);
+                    }catch(IOException ex){}
+
                     if(!session.isRunning())
                         offlineSessions.add(session);
                 }
@@ -22,11 +26,14 @@ public class SessionCleaner extends Thread {
                 for (Session var : offlineSessions) {
                     Session.sessions.remove(var);
                 }
+                
                 Session.lock.release();
 
-                Thread.sleep(120000);
+                Thread.sleep(1000);
 
-            }catch(Exception ex){
+            }
+            catch(Exception ex){
+                ex.printStackTrace();
                 
             }
         }
