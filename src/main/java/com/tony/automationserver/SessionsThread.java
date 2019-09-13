@@ -38,14 +38,18 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
         int length;
         byte[] buffer = new byte[256];
+        int sleepTime = 2;
+        int maxSleepTime = 3000;
+        int noDataCount = 0;
  
         BufferedInputStream bf = null;
 
         while (true) {
             try {
 
-                Thread.sleep(2);
+                Thread.sleep(sleepTime);
 
+                noDataCount = 0;
                 
                 Session session = null;
 
@@ -98,7 +102,10 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                         }
 
                         if(bf.available() == 0)
+                        {
+                            noDataCount++;
                             continue;
+                        }
                         
                         length = input.read(buffer, 0, buffer.length);
         
@@ -119,6 +126,23 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+
+            int existingLength = 0;
+            synchronized(this){
+                existingLength = sessions.size();
+            }
+
+            if(existingLength == noDataCount)
+                sleepTime += 1;
+            else
+                sleepTime -= 500;
+
+            if(sleepTime > maxSleepTime)
+                sleepTime = maxSleepTime;
+            else if (sleepTime < 2)
+                sleepTime = 2;
+
+            System.out.println(sleepTime);
         }
     }
 
