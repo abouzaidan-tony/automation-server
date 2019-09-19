@@ -44,8 +44,6 @@ public class SessionPool {
         
         thread.registerSession(session);
 
-        System.out.println(thread.getName() + " " + thread.getSize());
-
         queue.add(thread);
     }
 }

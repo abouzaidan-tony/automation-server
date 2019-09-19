@@ -141,8 +141,6 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                 sleepTime = maxSleepTime;
             else if (sleepTime < 2)
                 sleepTime = 2;
-
-            System.out.println(sleepTime);
         }
     }
 
