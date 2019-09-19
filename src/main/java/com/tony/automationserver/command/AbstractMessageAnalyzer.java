@@ -43,6 +43,13 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
         if(!isBroadcast)
             sendMessage(message, c, client);   
+
+        if(!message.KeepAlive())
+        {
+            Session session = getSessionById(c.id);
+            if(session != null)
+                session.close();
+        }
     }
     
     protected final void sendMessage(Message message, Client c, Client origin){
