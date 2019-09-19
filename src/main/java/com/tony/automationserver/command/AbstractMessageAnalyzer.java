@@ -42,14 +42,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
             throw new DeviceNotFoundException();
 
         if(!isBroadcast)
-            sendMessage(message, c, client);   
-
-        if(!message.KeepAlive())
-        {
-            Session session = getSessionById(c.id);
-            if(session != null)
-                session.close();
-        }
+            sendMessage(message, c, client);
     }
     
     protected final void sendMessage(Message message, Client c, Client origin){

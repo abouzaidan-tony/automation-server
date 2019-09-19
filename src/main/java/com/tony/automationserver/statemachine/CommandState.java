@@ -26,6 +26,9 @@ public class CommandState extends State {
         try{
             message = new Message(data, session.getClient());
             
+            if(!message.KeepAlive())
+                nextState = new FinalState(session);
+
             if(message.getMessageType() == MessageType.ECHO) {
                 message.setOrigin(session.getClient().getKey());
                 session.sendMessage(message.toByteArray());
@@ -33,10 +36,6 @@ public class CommandState extends State {
                 analyzer.Process(message);
             }
 
-            if(!message.KeepAlive())
-                nextState = new FinalState(session);
-
-            message = null;
         }catch(IllegalArgumentException ex){
 
             message = new MessageBuilder()
