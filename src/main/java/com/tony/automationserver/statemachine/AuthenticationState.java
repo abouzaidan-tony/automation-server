@@ -7,6 +7,7 @@ import com.tony.automationserver.authenticator.DeviceAuthenticator;
 import com.tony.automationserver.authenticator.UserAuthenticator;
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.command.DeviceMessageAnalyzer;
+import com.tony.automationserver.command.MessageAnalyzer;
 import com.tony.automationserver.command.UserMessageAnalyzer;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,8 +38,6 @@ public class AuthenticationState extends State {
 
         Client c = auth.Authenticate(data);
 
-        Session.lock.release();
-        
         if(c == null)
             session.writeByte((byte) 0x00);
         else
@@ -58,13 +57,19 @@ public class AuthenticationState extends State {
         
         session.setClient(c);
 
+        MessageAnalyzer analyzer = null;
+
         if(data[0] == 0x55){
             ClientSession.getUserSessions().put(c.id, session);
-            return new CommandState(session, new UserMessageAnalyzer());
+            analyzer = new UserMessageAnalyzer();
+        }else{
+            ClientSession.getDevicesSessions().put(c.id, session);
+            analyzer = new DeviceMessageAnalyzer();
         }
 
-        ClientSession.getDevicesSessions().put(c.id, session);
-        return new CommandState(session, new DeviceMessageAnalyzer());
+        Session.lock.release();
+        
+        return new CommandState(session, analyzer);
     }
 
     @Override
