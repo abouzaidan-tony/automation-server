@@ -60,13 +60,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
 
         if (d == null)
             return null;
-
-        try {
-            Session.lock.acquire();
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage(), e);
-        }
-        
+            
         if(d.connected == true) {
             ClientSession s = ClientSession.getDevicesSessions().get(d.id);
             if(s != null){
@@ -82,8 +76,6 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         
         EntityManager.GetInstance().Update(d);
         EntityManager.GetInstance().flush();
-
-        Session.lock.release();
         
         return d;
     }

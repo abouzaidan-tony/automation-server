@@ -1,6 +1,7 @@
 package com.tony.automationserver.statemachine;
 
 import com.tony.automationserver.ClientSession;
+import com.tony.automationserver.Session;
 import com.tony.automationserver.authenticator.Authenticator;
 import com.tony.automationserver.authenticator.DeviceAuthenticator;
 import com.tony.automationserver.authenticator.UserAuthenticator;
@@ -22,9 +23,22 @@ public class AuthenticationState extends State {
     @Override
     public State Process() {
         byte[] data = getData();
-        Authenticator<Client> auth = data[0] == 0x55 ? new UserAuthenticator() : new DeviceAuthenticator();
+        Authenticator<Client> auth = data[0] == 0x55 ? new UserAuthenticator()
+                : data[0] == 'D' ? new DeviceAuthenticator() : null;
+
+        if (auth == null)
+            return new FinalState(session);
+
+        try {
+            Session.lock.acquire();
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
+
         Client c = auth.Authenticate(data);
 
+        Session.lock.release();
+        
         if(c == null)
             session.writeByte((byte) 0x00);
         else
