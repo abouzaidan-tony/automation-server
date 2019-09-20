@@ -5,10 +5,10 @@
     </Properties>
     <Appenders>
         <File name="FILE" fileName="${basePath}/automation-server.log" append="true">
-            <PatternLayout pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] (%-40F:%3L) - %m%n" />
+            <PatternLayout pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%-10t] (%-30F:%3L) - %m%n" />
         </File>
         <Console name="STDOUT" target="SYSTEM_OUT">
-            <PatternLayout pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] (%-40F:%3L) - %m%n" />
+            <PatternLayout pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%-10t] (%-30F:%3L) - %m%n" />
         </Console>
     </Appenders>
     <Loggers>
