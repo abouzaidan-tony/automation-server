@@ -70,8 +70,8 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         if(d.connected == true) {
             ClientSession s = ClientSession.getDevicesSessions().get(d.id);
             if(s != null){
-                s.close();
                 logger.info(() -> "Removing old session " + s.getSocket().getInetAddress());
+                s.close();
             }
         }
         Session.lock.release();
