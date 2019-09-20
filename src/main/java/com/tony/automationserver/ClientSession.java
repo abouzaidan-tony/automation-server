@@ -9,7 +9,12 @@ import com.tony.automationserver.sqlhelper.EntityManager;
 import com.tony.automationserver.statemachine.StateMachine;
 import com.tony.automationserver.streams.BytesStreamManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ClientSession extends Session {
+
+    private static Logger logger = LogManager.getLogger(ClientSession.class.getName());
 
     private static HashMap<Long, ClientSession> userSessions;
     private static HashMap<Long, ClientSession> deviceSessions;
@@ -53,6 +58,7 @@ public class ClientSession extends Session {
     public void OnSessionClosed() {
         if(client == null)
             return;
+        logger.info(() -> "Removing client " + client);
         client.connected = false;
         EntityManager.GetInstance().Update(client);
         EntityManager.GetInstance().flush();

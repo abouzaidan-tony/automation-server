@@ -20,4 +20,9 @@ public class Device extends Client {
         return deviceKey;
     }
 
+    @Override
+    public String toString() {
+        return "[Device] " + deviceKey;
+    }
+
 }

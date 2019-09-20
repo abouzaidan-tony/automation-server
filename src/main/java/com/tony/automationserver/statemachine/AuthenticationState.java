@@ -8,7 +8,12 @@ import com.tony.automationserver.client.Client;
 import com.tony.automationserver.command.DeviceMessageAnalyzer;
 import com.tony.automationserver.command.UserMessageAnalyzer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class AuthenticationState extends State {
+
+    private static Logger logger = LogManager.getLogger(AuthenticationState.class.getName());
 
     public AuthenticationState(ClientSession session) {
         super(session);
@@ -30,8 +35,12 @@ public class AuthenticationState extends State {
         } catch (InterruptedException e) {}
 
         
-        if(c == null)
+        if(c == null){
+            logger.warn(() -> "Authentication Failed");
             return new FinalState(session);
+        }
+
+        logger.debug(() -> "Authentication success for " + c);
         
         session.setClient(c);
 

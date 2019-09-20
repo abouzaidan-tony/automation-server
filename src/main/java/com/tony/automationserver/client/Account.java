@@ -13,7 +13,7 @@ import com.tony.automationserver.sqlhelper.annotation.Table;
 
 @Table(name = "account")
 public class Account extends SQLObject {
-    
+
     @PrimaryKey
     @Property(name = "id", type = SQLTypes.Long)
     public Long id;
@@ -38,5 +38,10 @@ public class Account extends SQLObject {
 
     public Account(HashMap<String, Object> map) throws Exception {
         super(map);
+    }
+
+    @Override
+    public String toString() {
+        return "[ACCOUNT] " + email;
     }
 }

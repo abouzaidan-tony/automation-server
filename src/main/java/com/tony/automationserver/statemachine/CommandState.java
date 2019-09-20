@@ -10,8 +10,12 @@ import com.tony.automationserver.messages.Message;
 import com.tony.automationserver.messages.MessageBuilder;
 import com.tony.automationserver.messages.Message.MessageType;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class CommandState extends State {
 
+    private static Logger logger = LogManager.getLogger(CommandState.class.getName());
     private MessageAnalyzer analyzer;
 
     public CommandState(ClientSession session, MessageAnalyzer analyzer) {
@@ -23,6 +27,9 @@ public class CommandState extends State {
     public State Process() {
         Message message = null;
         State nextState = this;
+
+        logger.debug(() -> "Processing command from " + session.getClient());
+
         try{
             message = new Message(data, session.getClient());
             
@@ -37,7 +44,7 @@ public class CommandState extends State {
             }
 
         }catch(IllegalArgumentException ex){
-
+            logger.warn(() -> "Wrong message structure " + session.getClient());
             message = new MessageBuilder()
                 .setOrigin(session.getClient().getKey())
                 .setMessage("Wrong Message Format")
@@ -45,20 +52,20 @@ public class CommandState extends State {
                 .build();
 
         }catch(DeviceNotConnectedException | DeviceNotFoundException ex) {
+            logger.info(() -> ex.getMessage() + " " + session.getClient());
             message = new MessageBuilder().setOrigin(message.getOrigin())
                     .setMessage(ex.getMessage()).setMessageType(MessageType.ERROR).build();
         }catch(IOException ex){
-
+            logger.error(session.getClient() + " " + ex.getMessage(), ex);
         }
 
         try{
             if(message != null)
             session.sendMessage(message.toByteArray());
         }catch(IOException ex){
-
+            logger.error(session.getClient() + " " + ex.getMessage(), ex);
         }
         
-        System.out.println("Processing Command");
         return nextState;    
     }
 

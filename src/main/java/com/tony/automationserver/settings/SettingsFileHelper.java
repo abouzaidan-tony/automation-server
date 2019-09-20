@@ -7,11 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SettingsFileHelper {
 
+    private static Logger logger = LogManager.getLogger(SettingsFileHelper.class.getName());
 	private static String SETTINGS_FILE_PATH= "settings.json";
 	
 	public static JSONObject readSettings() throws JSONException {
@@ -25,8 +28,9 @@ public class SettingsFileHelper {
 //				Logger.getInstance().log("Failed to read settings. Please update the settings file and try again");
 			}
 			data = new String(Files.readAllBytes(path));
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException ex) {
+            logger.error(ex.getMessage(), ex);
+			
 		}
 		return new JSONObject(data);
 	}
@@ -40,7 +44,7 @@ public class SettingsFileHelper {
 			jsonObject.put("user", "insert db user here");
 			jsonObject.put("password", "insert db password here");
 		} catch (JSONException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return jsonObject.toString();
 	}

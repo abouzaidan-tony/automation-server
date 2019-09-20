@@ -8,12 +8,20 @@ import com.tony.automationserver.client.User;
 import com.tony.automationserver.sqlhelper.EntityManager;
 import com.tony.automationserver.sqlhelper.filter.FilterTuple;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class UserAuthenticator implements Authenticator<Client> {
 
+    private static Logger logger = LogManager.getLogger(UserAuthenticator.class.getName());
+    
     @Override
     public Client Authenticate(byte[] data) {
-        if (data.length != 36)
+        logger.debug(() -> "Authenticating Device");
+        if(data.length != 36){
+            logger.debug(() -> "Invalid authentication data");
             return null;
+        }
         String userToken = new String(data, 1, 15);
         String appToken = new String(data, 16, 15);
         String deviceCode = new String(data, 31, 5);
@@ -21,8 +29,12 @@ public class UserAuthenticator implements Authenticator<Client> {
         Account account = EntityManager.GetInstance().GetRepository(Account.class)
                 .findOneBy(new FilterTuple("token", userToken));
 
-        if (account == null)
+        if(account == null) {
+            logger.debug(() -> "Authentication failed : account not found");
             return null;
+        }
+
+        logger.debug(() -> "Authentication : " + account);
 
         boolean found = false;
         for (Application var : account.subscriptions) {
@@ -52,6 +64,9 @@ public class UserAuthenticator implements Authenticator<Client> {
             if (s != null)
                 s.close();
         }
+
+        final String deviceString = d.toString();
+        logger.debug(() -> "Authentication : " + deviceString);
 
         d.connected = true;
 

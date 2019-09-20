@@ -10,7 +10,6 @@ public class FinalState extends State {
     
     @Override
     public State Process() {
-        System.out.println("Closing Session");
         session.close();
         return null;
     }

@@ -19,4 +19,9 @@ public class User extends Client {
     public String getKey() {
         return userKey;
     }
+
+    @Override
+    public String toString() {
+        return "[USER] " + userKey;
+    }
 }

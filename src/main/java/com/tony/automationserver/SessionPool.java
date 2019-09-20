@@ -18,11 +18,11 @@ public class SessionPool {
     }
 
     private void init(){
-        for(int i=0; i<MAX_THREADS; i++){
-            SessionsThread thread = new SessionsThread();
-            thread.start();
-            queue.add(thread);
-        }
+        // for(int i=0; i<MAX_THREADS/5; i++){
+        //     SessionsThread thread = new SessionsThread();
+        //     thread.start();
+        //     queue.add(thread);
+        // }
     } 
 
     public static synchronized SessionPool getInstance(){

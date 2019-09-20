@@ -6,13 +6,28 @@ import java.net.Socket;
 
 import com.tony.automationserver.sqlhelper.SQLHelper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Server 
 {
-    public static void main( String[] args ) throws IOException
-    {
+    private static Logger logger = LogManager.getLogger(Server.class.getName());
 
+    public static void main( String[] args ) throws IOException {
+        try{
+            run(args);
+        }catch(Exception ex){
+            logger.error(ex.getMessage(), ex);
+        }
+        logger.warn(() -> "Closing App");
+    }
+    
+    public static void run( String[] args ) throws IOException
+    {
+        logger.info(() -> "Starting App");
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE user SET connected = 0", null);
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);
+        logger.info(() -> "End updating database");
 
         Thread cc = new CacheCleaner();
         Thread sc = new SessionCleaner();
@@ -27,6 +42,7 @@ public class Server
         try {
             while (true) {
                 Socket socket = listener.accept();
+                logger.info(() -> "Client accepted from IP " + socket.getInetAddress());
                 ClientSession session = new ClientSession(socket);
                 pool.addSession(session);
             }

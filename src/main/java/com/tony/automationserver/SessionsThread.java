@@ -8,7 +8,12 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class SessionsThread extends Thread implements Comparable<SessionsThread> {
+
+    private static Logger logger = LogManager.getLogger(SessionsThread.class.getName());
 
     private LinkedList<Session> sessions;
     private Iterator<Session> iterator;
@@ -35,6 +40,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     @Override
     public void run() {
+        logger.info(() -> "Sessions Thread Started");
 
         int length;
         byte[] buffer = new byte[256];
@@ -63,8 +69,11 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     isEmpty = sessions.size() == 0;
                 }
 
-                if(isEmpty)
+                if(isEmpty) {
+                    logger.debug(() -> "Aquiring Lock");
                     halter.acquire();
+                    logger.debug(() -> "Resuming");
+                }
 
 
                 iterator = sessions.iterator();
@@ -116,7 +125,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                             session.getDataReceivedListener().OnDataReceived(buffer, length);
         
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        
                         session.close();
                         iterator.remove();
                     }

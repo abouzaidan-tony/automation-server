@@ -10,10 +10,13 @@ import java.util.concurrent.Semaphore;
 import com.tony.automationserver.streams.OnMessageReadyListener;
 import com.tony.automationserver.streams.StreamManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.OutputStream;
 
 public abstract class Session implements OnMessageReadyListener {
 
+    private static Logger logger = LogManager.getLogger(Session.class.getName());
     public static Semaphore lock = new Semaphore(1);
     public static List<Session> sessions = new LinkedList<>();
 
@@ -34,13 +37,15 @@ public abstract class Session implements OnMessageReadyListener {
             out = socket.getOutputStream();
             input = socket.getInputStream();
         } catch (IOException ex) {
+            logger.error(ex.getMessage(), ex);
             running = false;
         }
         try {
             lock.acquire();
             sessions.add(this);
             lock.release();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ex) {
+            logger.error(ex.getMessage(), ex);
         }
         
     }
@@ -63,7 +68,7 @@ public abstract class Session implements OnMessageReadyListener {
             ex.printStackTrace();
         }
 
-        System.out.println("Session Closed");
+        logger.info(() -> "Session closed");
         OnSessionClosed();
     }
 
@@ -85,7 +90,8 @@ public abstract class Session implements OnMessageReadyListener {
     public synchronized void writeByte(byte b){
         try {
             out.write(b);
-        } catch (IOException e){
+        } catch (IOException ex){
+            logger.error(ex.getMessage(), ex);
             close();
         }
     }
