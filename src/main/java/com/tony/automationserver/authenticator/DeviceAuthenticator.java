@@ -74,7 +74,6 @@ public class DeviceAuthenticator implements Authenticator<Client> {
                 s.close();
             }
         }
-        Session.lock.release();
 
         final String deviceString = d.toString();
         logger.debug(() -> "Authentication : " + deviceString);
@@ -83,6 +82,8 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         
         EntityManager.GetInstance().Update(d);
         EntityManager.GetInstance().flush();
+
+        Session.lock.release();
         
         return d;
     }
