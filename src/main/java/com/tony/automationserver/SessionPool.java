@@ -32,15 +32,13 @@ public class SessionPool {
     }
 
     public synchronized void addSession(Session session){
-        SessionsThread thread;
+        SessionsThread thread = queue.poll();
         
-        if(queue.size() < MAX_THREADS)
+        if((thread == null || thread.getSize() != 0) && queue.size() < MAX_THREADS)
         {
             thread = new SessionsThread();
             thread.start();
         }
-        else
-            thread = queue.poll();
         
         thread.registerSession(session);
 
