@@ -29,6 +29,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     public synchronized void registerSession(Session s) {
         boolean wasEmpty = queue.size() == 0;
+        logger.info(() -> "Adding session");
         queue.add(s);
         if(wasEmpty)
             halter.release();
@@ -100,9 +101,10 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     InputStream input = session.getInputStream();
                     
                     bf = new BufferedInputStream(input);
+
                     try {
 
-                        if(session.getSocket().isClosed())
+                        if(!session.isRunning())
                         {
                             synchronized(this){
                                 iterator.remove();
@@ -154,7 +156,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     }
 
     @Override
-    public int compareTo(SessionsThread o) {
+    public synchronized int compareTo(SessionsThread o) {
         return Integer.compare(sessions.size(), o.sessions.size());
     }
 }

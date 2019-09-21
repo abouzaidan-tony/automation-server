@@ -1,7 +1,6 @@
 package com.tony.automationserver.authenticator;
 
 import com.tony.automationserver.ClientSession;
-import com.tony.automationserver.Session;
 import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Application;
 import com.tony.automationserver.client.Client;
