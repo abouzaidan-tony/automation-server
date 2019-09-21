@@ -29,14 +29,15 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     public synchronized void registerSession(Session s) {
         boolean wasEmpty = queue.size() == 0;
-        logger.info(() -> "Adding session");
+        logger.debug(() -> "Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
+        logger.debug(() -> "new size is " + (queue.size() + sessions.size()));
         if(wasEmpty)
             halter.release();
     }
     
     public synchronized int getSize(){
-        return sessions.size();
+        return sessions.size() + queue.size();
     }
 
     @Override
@@ -94,6 +95,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     if(!session.isRunning()){
                         synchronized(this){
                             iterator.remove();
+                            logger.debug(() -> getName() + " removing session, new size " + queue.size());
                         }
                         continue;
                     }
@@ -108,6 +110,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                         {
                             synchronized(this){
                                 iterator.remove();
+                                logger.debug(() -> getName() + " removing session, new size " + queue.size());
                             }
                             continue;
                         }
@@ -127,7 +130,6 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                             session.getDataReceivedListener().OnDataReceived(buffer, length);
         
                     } catch (Exception ex) {
-                        
                         session.close();
                         iterator.remove();
                     }
@@ -135,7 +137,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                 }while(true);
               
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error(ex.getMessage());
             }
 
             int existingLength = 0;
@@ -156,7 +158,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     }
 
     @Override
-    public synchronized int compareTo(SessionsThread o) {
-        return Integer.compare(sessions.size(), o.sessions.size());
+    public int compareTo(SessionsThread o) {
+        return Integer.compare(this.getSize(), o.getSize());
     }
 }

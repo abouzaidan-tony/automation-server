@@ -38,16 +38,17 @@ public abstract class Session implements OnMessageReadyListener {
             input = socket.getInputStream();
         } catch (IOException ex) {
             logger.error(ex.getMessage(), ex);
-            running = false;
+            close();
+            return;
         }
         try {
             lock.acquire();
             sessions.add(this);
             lock.release();
         } catch (InterruptedException ex) {
+            lock.release();
             logger.error(ex.getMessage(), ex);
         }
-        
     }
 
     public Socket getSocket() {
@@ -68,7 +69,7 @@ public abstract class Session implements OnMessageReadyListener {
             ex.printStackTrace();
         }
 
-        logger.info(() -> "Session closed");
+        logger.debug(() -> "Session closed");
         OnSessionClosed();
     }
 

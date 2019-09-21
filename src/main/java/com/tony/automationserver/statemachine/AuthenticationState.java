@@ -1,7 +1,8 @@
 package com.tony.automationserver.statemachine;
 
+import java.util.concurrent.Semaphore;
+
 import com.tony.automationserver.ClientSession;
-import com.tony.automationserver.Session;
 import com.tony.automationserver.authenticator.Authenticator;
 import com.tony.automationserver.authenticator.DeviceAuthenticator;
 import com.tony.automationserver.authenticator.UserAuthenticator;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class AuthenticationState extends State {
 
     private static Logger logger = LogManager.getLogger(AuthenticationState.class.getName());
+    private static Semaphore authLock = new Semaphore(1);
 
     public AuthenticationState(ClientSession session) {
         super(session);
@@ -31,49 +33,57 @@ public class AuthenticationState extends State {
             return new FinalState(session);
 
         try {
-            Session.lock.acquire();
+            authLock.acquire();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         }
 
         Client c = auth.Authenticate(data);
 
-        if(c == null)
-            session.writeByte((byte) 0x00);
-        else
-            session.writeByte((byte) 0x01);
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {}
-
-        
-        if(c == null){
-            logger.warn(() -> "Authentication Failed");
-            return new FinalState(session);
-        }
-
-        logger.debug(() -> "Authentication success for " + c);
-        
-        session.setClient(c);
-
-        MessageAnalyzer analyzer = null;
-
-        if(data[0] == 0x55){
-            ClientSession.getUserSessions().put(c.id, session);
-            analyzer = new UserMessageAnalyzer();
-        }else{
-            ClientSession.getDevicesSessions().put(c.id, session);
-            analyzer = new DeviceMessageAnalyzer();
-        }
-
-        Session.lock.release();
-        
-        return new CommandState(session, analyzer);
+        if (c == null)
+            return handleAuthFailed();
+        return handleAuthSuccess(c);
     }
 
     @Override
     public boolean instantExecution() {
         return false;
+    }
+
+    private State handleAuthSuccess(Client c) {
+        session.writeByte((byte) 0x01);
+
+        logger.info(() -> "Authentication success for " + c);
+
+        session.setClient(c);
+
+        MessageAnalyzer analyzer = null;
+
+        try {
+            ClientSession.lock.acquire();
+        } catch (InterruptedException e) {}
+
+        if (data[0] == 0x55) {
+            ClientSession.getUserSessions().put(c.id, session);
+            analyzer = new UserMessageAnalyzer();
+        } else {
+            ClientSession.getDevicesSessions().put(c.id, session);
+            analyzer = new DeviceMessageAnalyzer();
+        }
+        ClientSession.lock.release();
+        authLock.release();
+        return new CommandState(session, analyzer);
+    }
+
+    private State handleAuthFailed() {
+        session.writeByte((byte) 0x00);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        logger.warn(() -> "Authentication Attempt Failed");
+        authLock.release();
+        return new FinalState(session);
     }
 }

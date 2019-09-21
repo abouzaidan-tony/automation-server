@@ -52,7 +52,8 @@ public class CommandState extends State {
                 .build();
 
         }catch(DeviceNotConnectedException | DeviceNotFoundException ex) {
-            logger.info(() -> ex.getMessage() + " " + session.getClient());
+            final String str = session.getClient() + " -> " + message.getOrigin();
+            logger.info(() -> ex.getMessage() + " " + str);
             message = new MessageBuilder().setOrigin(message.getOrigin())
                     .setMessage(ex.getMessage()).setMessageType(MessageType.ERROR).build();
         }catch(IOException ex){
@@ -61,7 +62,7 @@ public class CommandState extends State {
 
         try{
             if(message != null)
-            session.sendMessage(message.toByteArray());
+                session.sendMessage(message.toByteArray());
         }catch(IOException ex){
             logger.error(session.getClient() + " " + ex.getMessage(), ex);
         }

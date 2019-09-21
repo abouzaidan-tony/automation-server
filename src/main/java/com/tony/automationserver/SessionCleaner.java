@@ -41,8 +41,8 @@ public class SessionCleaner extends Thread {
 
                 if(sleepTime > 7000)
                     sleepTime = 7000;
-                else if (sleepTime < 1000)
-                    sleepTime = 1000;
+                else if (sleepTime < 2000)
+                    sleepTime = 2000;
                 
                 for (Session var : offlineSessions) {
                     Session.sessions.remove(var);

@@ -2,6 +2,7 @@ package com.tony.automationserver;
 
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.client.User;
@@ -18,6 +19,7 @@ public class ClientSession extends Session {
 
     private static HashMap<Long, ClientSession> userSessions;
     private static HashMap<Long, ClientSession> deviceSessions;
+    public static Semaphore lock = new Semaphore(1);
 
     private Client client;
 
@@ -29,15 +31,14 @@ public class ClientSession extends Session {
         return deviceSessions;
     }
 
-    static{
+    static {
         userSessions = new HashMap<>();
         deviceSessions = new HashMap<>();
     }
 
     private StateMachine stateMachine;
 
-    public ClientSession(Socket socket)
-    {
+    public ClientSession(Socket socket) {
         super(socket, new BytesStreamManager());
         stateMachine = new StateMachine(this);
     }
@@ -56,16 +57,20 @@ public class ClientSession extends Session {
 
     @Override
     public void OnSessionClosed() {
-        if(client == null)
+        if (client == null)
             return;
         logger.info(() -> "Removing client " + client);
         client.connected = false;
         EntityManager.GetInstance().Update(client);
         EntityManager.GetInstance().flush();
+        try {
+            lock.acquire();
+        } catch (InterruptedException e) {}
         if(client instanceof User)
             userSessions.remove(client.id);
         else
             deviceSessions.remove(client.id);
+        lock.release();
         client = null;
     }
 }

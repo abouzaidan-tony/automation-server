@@ -1,28 +1,33 @@
 package com.tony.automationserver;
 
-import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import com.tony.automationserver.settings.Settings;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SessionPool {
 
     private static final int MAX_THREADS = Settings.getInstance().getInt("maxThreadNumber");
+    private static Logger logger = LogManager.getLogger(SessionPool.class.getName());
     private static SessionPool pool;
 
 
-    private PriorityQueue<SessionsThread> queue;
+    private ArrayList<SessionsThread> queue;
 
     private SessionPool() {
-        queue = new PriorityQueue<>();
+        queue = new ArrayList<>();
         init();
     }
 
     private void init(){
-        for(int i=0; i<1; i++){
-            SessionsThread thread = new SessionsThread();
-            thread.start();
-            queue.add(thread);
-        }
+        // for(int i=0; i<1; i++){
+        //     SessionsThread thread = new SessionsThread();
+        //     thread.start();
+        //     queue.add(thread);
+        // }
     } 
 
     public static synchronized SessionPool getInstance(){
@@ -32,18 +37,27 @@ public class SessionPool {
     }
 
     public synchronized void addSession(Session session){
-        SessionsThread thread = queue.poll();
-        
-        if((thread == null || thread.getSize() != 0) && queue.size() < MAX_THREADS)
-        {
-            if(thread != null)
-                queue.add(thread);
-            thread = new SessionsThread();
+        logger.debug(()-> "Thread count " + queue.size());
+        if(queue.size() == 0){
+            SessionsThread thread = new SessionsThread();
+            queue.add(thread);
+            thread.registerSession(session);
             thread.start();
+        }else{
+            Collections.sort(queue);
+            logger.debug(() -> "Sorted List");
+            for(SessionsThread s : queue){
+                logger.debug(() -> s.getSize() + " " +  s.getName());
+            }
+            SessionsThread thread = queue.get(0);
+            if(thread.getSize() == 0 || queue.size() >= MAX_THREADS){
+                thread.registerSession(session);
+            }else {
+                thread = new SessionsThread();
+                queue.add(thread);
+                thread.registerSession(session);
+                thread.start();
+            }
         }
-        
-        thread.registerSession(session);
-
-        queue.add(thread);
     }
 }
