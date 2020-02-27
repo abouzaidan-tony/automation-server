@@ -14,45 +14,45 @@ public class SessionCleaner extends Thread {
 
     @Override
     public void run() {
-        LinkedList<Session> offlineSessions = new LinkedList<>(); 
+        LinkedList<Session> offlineSessions = new LinkedList<>();
         sleepTime = 1000;
-        while(true){
-            try{
+        while (true) {
+            try {
                 offlineSessions.clear();
 
                 Session.lock.acquire();
-                
-                for(Session session : Session.sessions){
-                    try{
-                        session.sendMessage(null);
-                    }catch(IOException ex){}
 
-                    if(!session.isRunning())
+                for (Session session : Session.sessions) {
+                    try {
+                        if (!session.isSkip())
+                            session.sendMessage(null);
+                    } catch (IOException ex) {
+                    }
+
+                    if (!session.isRunning())
                         offlineSessions.add(session);
                 }
-                
-                
-                if(offlineSessions.size() == 0)
+
+                if (offlineSessions.size() == 0)
                     sleepTime += 100;
                 else {
                     logger.debug(() -> "Removing " + offlineSessions.size() + " sessions");
                     sleepTime -= offlineSessions.size() * 100;
                 }
 
-                if(sleepTime > 7000)
+                if (sleepTime > 7000)
                     sleepTime = 7000;
                 else if (sleepTime < 2000)
                     sleepTime = 2000;
-                
+
                 for (Session var : offlineSessions) {
                     Session.sessions.remove(var);
                 }
-                
+
                 Session.lock.release();
 
                 Thread.sleep(sleepTime);
-            }
-            catch(Exception ex){
+            } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
             }
         }

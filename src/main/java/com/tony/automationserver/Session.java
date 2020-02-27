@@ -26,9 +26,11 @@ public abstract class Session implements OnMessageReadyListener {
     private OnDataReceivedListener dataReceivedListener;
     private boolean running;
     private StreamManager manager;
+    private boolean skip;
 
     public Session(Socket socket, StreamManager manager) {
         running = true;
+        skip = true;
         this.socket = socket;
         this.manager = manager;
         this.manager.setOnMessageReadyListener(this);
@@ -103,5 +105,11 @@ public abstract class Session implements OnMessageReadyListener {
 
     public InputStream getInputStream() {
         return input;
+    }
+
+    public boolean isSkip() {
+        boolean skip = this.skip;
+        this.skip = false;
+        return skip;
     }
 }
