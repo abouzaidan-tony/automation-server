@@ -6,78 +6,39 @@ import java.util.HashMap;
 
 import com.tony.automationserver.sqlhelper.SchemaHelper.PropertyMap;
 
-
 public abstract class SQLObject {
 
     private HashMap<String, Object> map;
 
-    public SQLObject(){
+    public SQLObject() {
         map = new HashMap<>();
     }
-    
-    public SQLObject(HashMap<String, Object> map) throws Exception
-    {
+
+    public SQLObject(HashMap<String, Object> map) throws Exception {
         this.map = map;
-    	Class<?> c = this.getClass();
-    	Field f = null;
-    	for (PropertyMap var : SchemaHelper.getColumns(this.getClass()))
-    	{
-    		String column = var.columnName;
-    		if(map.containsKey(column))
-    		{
-    			Class<?> temp = c;
-    			f = null;
-    			do {
-    				try {
-    					f = temp.getDeclaredField(var.fieldName);
-    				}catch(Exception ex) {
-                        temp = temp.getSuperclass();
-    				}
-                }while(f == null && temp != SQLObject.class);
-    			f.setAccessible(true);
-    			f.set(this, map.get(column));
-    		}
-    	}
-    }
-
-    Object getPropertyValue(String fieldName) {
-        try {
-            Class<?> c = this.getClass();
-            Field f = null;
-            do {
-                try {
-                    f = c.getDeclaredField(fieldName);
-                    f.setAccessible(true);
-                } catch (Exception ex) {
-                    if (c == null)
-                        return null;
-                    c = c.getSuperclass();
-                }
-            } while (f == null);
-
-            return f.get(this);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+        Field f = null;
+        for (PropertyMap var : SchemaHelper.getColumns(this.getClass())) {
+            String column = var.columnName;
+            if (map.containsKey(column)) {
+                f = var.field;
+                f.setAccessible(true);
+                f.set(this, map.get(column));
+            }
         }
     }
 
-    void setPropertyValue(String fieldName, Object value) throws IllegalArgumentException, IllegalAccessException {
-        Class<?> c = this.getClass();
-        Field f = null;
-        do {
-            try {
-                f = c.getDeclaredField(fieldName);
-                f.setAccessible(true);
-            } catch (Exception ex) {
-                if (c == null)
-                    break;
-                c = c.getSuperclass();
-            }
-        } while (f == null);
+    Object getPropertyValue(Field field) {
+        field.setAccessible(true);
+        try {
+            return field.get(this);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+        }
+        return null;
+    }
 
-        if(f != null)
-            f.set(this, value);
+    void setPropertyValue(Field field, Object value) throws IllegalArgumentException, IllegalAccessException {
+        field.setAccessible(true);
+        field.set(this, value);
     }
 
     final Object[] getPropertyArray(boolean primary_is_last, boolean combined) {
@@ -97,10 +58,10 @@ public abstract class SQLObject {
                     continue;
                 }
             }
-            pros[i++] = getPropertyValue(var.fieldName);
+            pros[i++] = getPropertyValue(var.field);
         }
 
-        pros[pros.length - 1] = getPropertyValue(key.fieldName);
+        pros[pros.length - 1] = getPropertyValue(key.field);
 
         return pros;
     }
@@ -118,8 +79,8 @@ public abstract class SQLObject {
     void PostDelete(){}
 
     Object getKeyValue() {
-        String fieldName = SchemaHelper.getPrimaryKey(this.getClass()).fieldName;
-        return getPropertyValue(fieldName);
+        Field field = SchemaHelper.getPrimaryKey(this.getClass()).field;
+        return getPropertyValue(field);
     }
 
     @Override

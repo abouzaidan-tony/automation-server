@@ -38,7 +38,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         logger.info(() -> "Authentication : " + account);
 
         boolean found = false;
-        for (Application var : account.subscriptions) {
+        for (Application var : account.getSubscriptions()) {
             if (var.token.equals(appToken)) {
                 found = true;
                 break;
@@ -50,7 +50,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
 
         Device d = null;
 
-        for (Client uD : account.devices) {
+        for (Client uD : account.getDevices()) {
             if (uD.getKey().equals(deviceCode)) {
                 d = (Device) uD;
                 break;
@@ -60,8 +60,8 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         if (d == null)
             return null;
             
-        if(d.connected == true) {
-            ClientSession s = ClientSession.getDevicesSessions().get(d.id);
+        if(d.isConnected() == true) {
+            ClientSession s = ClientSession.getDevicesSessions().get(d.getId());
             if(s != null){
                 logger.info(() -> "Removing old session " + s.getSocket().getInetAddress());
                 s.close();
@@ -71,7 +71,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         final String deviceString = d.toString();
         logger.debug(() -> "Authentication : " + deviceString);
 
-        d.connected = true;
+        d.setConnected(true);
         
         EntityManager.GetInstance().Update(d);
         EntityManager.GetInstance().flush();

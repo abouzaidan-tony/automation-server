@@ -16,25 +16,25 @@ public class Account extends SQLObject {
 
     @PrimaryKey
     @Property(name = "id", type = SQLTypes.Long)
-    public Long id;
+    private Long id;
 
     @Property(name = "email")
-    public String email;
+    private String email;
 
     @Property(name = "token")
-    public String token;
+    private String token;
 
     @Property(name = "password")
-    public String passwordHash;
+    private String passwordHash;
 
     @OneToMany(targetEntity = Device.class, mappedBy = "account_id")
-    public LinkedList<Client> devices;
+    private LinkedList<Client> devices;
 
     @OneToMany(targetEntity = User.class, mappedBy = "account_id")
-    public LinkedList<Client> users;
+    private LinkedList<Client> users;
 
     @ManyToMany(targetEntity = Application.class, mappedBy = "account_id", inversedBy = "app_id", joinTable = "subscriptions")
-    public LinkedList<Application> subscriptions;
+    private LinkedList<Application> subscriptions;
 
     public Account(HashMap<String, Object> map) throws Exception {
         super(map);
@@ -43,5 +43,61 @@ public class Account extends SQLObject {
     @Override
     public String toString() {
         return "[ACCOUNT] " + email;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public LinkedList<Client> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(LinkedList<Client> devices) {
+        this.devices = devices;
+    }
+
+    public LinkedList<Client> getUsers() {
+        return users;
+    }
+
+    public void setUsers(LinkedList<Client> users) {
+        this.users = users;
+    }
+
+    public LinkedList<Application> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(LinkedList<Application> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 }

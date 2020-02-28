@@ -64,10 +64,10 @@ public class AuthenticationState extends State {
         } catch (InterruptedException e) {}
 
         if (data[0] == 0x55) {
-            ClientSession.getUserSessions().put(c.id, session);
+            ClientSession.getUserSessions().put(c.getId(), session);
             analyzer = new UserMessageAnalyzer();
         } else {
-            ClientSession.getDevicesSessions().put(c.id, session);
+            ClientSession.getDevicesSessions().put(c.getId(), session);
             analyzer = new DeviceMessageAnalyzer();
         }
         ClientSession.lock.release();

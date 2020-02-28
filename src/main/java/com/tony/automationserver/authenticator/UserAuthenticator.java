@@ -37,7 +37,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         logger.debug(() -> "Authentication : " + account);
 
         boolean found = false;
-        for (Application var : account.subscriptions) {
+        for (Application var : account.getSubscriptions()) {
             if(var.token.equals(appToken)){
                 found = true;
                 break;
@@ -50,7 +50,7 @@ public class UserAuthenticator implements Authenticator<Client> {
 
         User d = null;
 
-        for (Client uD : account.users) {
+        for (Client uD : account.getUsers()) {
             if (uD.getKey().equals(deviceCode)) {
                 d = (User) uD;
                 break;
@@ -59,8 +59,8 @@ public class UserAuthenticator implements Authenticator<Client> {
         if (d == null)
             return null;
 
-        if (d.connected == true) {
-            ClientSession s = ClientSession.getUserSessions().get(d.id);
+        if (d.isConnected() == true) {
+            ClientSession s = ClientSession.getUserSessions().get(d.getId());
             if (s != null)
                 s.close();
         }
@@ -68,7 +68,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         final String deviceString = d.toString();
         logger.debug(() -> "Authentication : " + deviceString);
 
-        d.connected = true;
+        d.setConnected(true);
 
         EntityManager.GetInstance().Update(d);
         EntityManager.GetInstance().flush();

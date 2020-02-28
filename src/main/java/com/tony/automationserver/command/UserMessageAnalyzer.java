@@ -12,8 +12,8 @@ public class UserMessageAnalyzer extends AbstractMessageAnalyzer {
 
     @Override
     public List<Client> getCandidates(Client client) {
-        Account account = EntityManager.GetInstance().GetRepository(Account.class).find(client.account.id);
-        return account.devices;
+        Account account = EntityManager.GetInstance().GetRepository(Account.class).find(client.getAccount().getId());
+        return account.getDevices();
     }
 
     @Override

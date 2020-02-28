@@ -1,17 +1,24 @@
 package com.tony.automationserver.sqlhelper;
 
-import java.lang.reflect.Constructor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.tony.automationserver.sqlhelper.SQLHelper;
 import com.tony.automationserver.sqlhelper.SQLObject;
-import com.tony.automationserver.sqlhelper.SchemaHelper;
 import com.tony.automationserver.sqlhelper.SchemaHelper.PropertyMap;
+import com.tony.automationserver.sqlhelper.annotation.ManyToMany;
+import com.tony.automationserver.sqlhelper.annotation.ManyToOne;
+import com.tony.automationserver.sqlhelper.annotation.OneToMany;
+import com.tony.automationserver.sqlhelper.annotation.OneToOne;
 import com.tony.automationserver.sqlhelper.filter.FilterTuple;
 import com.tony.automationserver.sqlhelper.joins.JoinTuple;
+
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 
 public class Repository<T extends SQLObject> {
 
@@ -27,7 +34,7 @@ public class Repository<T extends SQLObject> {
     private int offset;
     private Class<T> clazz;
 
-    private Repository(Class<T> clazz){
+    private Repository(Class<T> clazz) {
         this.clazz = clazz;
         this.limit = 0;
         this.offset = 0;
@@ -35,7 +42,7 @@ public class Repository<T extends SQLObject> {
         this.joins = new LinkedList<>();
     }
 
-    public static HashMap<Class<? extends SQLObject>, HashMap<Object, SQLObject>> getCaches(){
+    public static HashMap<Class<? extends SQLObject>, HashMap<Object, SQLObject>> getCaches() {
         return cachedObjects;
     }
 
@@ -65,7 +72,7 @@ public class Repository<T extends SQLObject> {
         builder.append("FROM ");
         builder.append(tableName);
 
-        for(JoinTuple var : joins){
+        for (JoinTuple var : joins) {
             builder.append(' ');
             builder.append(var.toString());
             builder.append(' ');
@@ -95,8 +102,7 @@ public class Repository<T extends SQLObject> {
         return f_query;
     }
 
-    public Repository<T> Join(JoinTuple joinTuple)
-    {
+    public Repository<T> Join(JoinTuple joinTuple) {
         joins.add(joinTuple);
         return this;
     }
@@ -125,19 +131,19 @@ public class Repository<T extends SQLObject> {
     }
 
     public T findOneBy(List<FilterTuple> filters) {
+        limit = 1;
         LinkedList<T> list = findBy(filters);
         return list.size() == 0 ? null : list.getFirst();
     }
 
     public T findOneBy(FilterTuple... filters) {
-        LinkedList<T> list = findBy(Arrays.asList(filters));
-        return list.size() == 0 ? null : list.getFirst();
+        return findOneBy(Arrays.asList(filters));
     }
 
     @SuppressWarnings("unchecked")
     public T find(Object primaryKeyValue) {
-        T temp = (T) cachedObjects.get(this.clazz).get((Object)primaryKeyValue);
-        if(temp != null)
+        T temp = (T) cachedObjects.get(this.clazz).get((Object) primaryKeyValue);
+        if (temp != null)
             return temp;
         PropertyMap key = SchemaHelper.getPrimaryKey(clazz);
         LinkedList<T> list = findBy(Arrays.asList(new FilterTuple(key.columnName, primaryKeyValue)));
@@ -162,17 +168,50 @@ public class Repository<T extends SQLObject> {
         Object[] filterParamsArray = filterParams.toArray();
         try {
             results = SQLHelper.GetInstance().ExecuteQuery(getFetchQuery(), filterParamsArray,
-                    SchemaHelper.getCombinedColumnsType(clazz));
+                    SchemaHelper.getColumnsType(clazz));
 
             for (HashMap<String, Object> entry : results) {
-                Constructor<? extends SQLObject> constructor = clazz.getConstructor(HashMap.class);
-                SQLObject tmp = constructor.newInstance(entry);
-                T instance = (T) (tmp);
+                ProxyFactory factory = new ProxyFactory();
+                factory.setSuperclass(clazz);
+                MethodHandler handler = new MethodHandler() {
+                    @Override
+                    public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args)
+                            throws Throwable {
+
+                        if (!thisMethod.getName().startsWith("get")) {
+                            return thisMethod.invoke(self, args);
+                        }
+
+                        Object ret = proceed.invoke(self, args);
+                        if (ret != null)
+                            return ret;
+
+                        Field f = SchemaHelper.getRelatedField(thisMethod, clazz);
+
+                        if (f == null) {
+                            return ret;
+                        }
+
+                        Annotation[] annotations = f.getAnnotations();
+                        for (Annotation annotation : annotations) {
+                            if (annotation instanceof ManyToMany) {
+                                fillManyToManyReferences((T)self, SchemaHelper.getManyToManyProperty(clazz, f));
+                            } else if (annotation instanceof ManyToOne) {
+                                fillManyToOneReferences((T) self, SchemaHelper.getManyToOneProperty(clazz, f));
+                            } else if (annotation instanceof OneToMany) {
+                                fillOneToManyReferences((T) self, SchemaHelper.getOneToManyProperty(clazz, f));
+                            }else if (annotation instanceof OneToOne){
+                                fillOneToOneReferences((T) self, SchemaHelper.getOneToOneProperty(clazz, f));
+                            }
+                        }
+                        return proceed.invoke(self, args);
+                    }
+
+                };
+
+                T instance = (T) factory.create(new Class<?>[] { HashMap.class }, new Object[] { entry }, handler);
                 cachedObjects.get(clazz).put(instance.getKeyValue(), instance);
                 objs.add(instance);
-                fillOneToManyReferences(instance);
-                fillManyToOneReferences(instance);
-                fillManyToManyReferences(instance);
             }
 
         } catch (Exception ex) {
@@ -182,38 +221,47 @@ public class Repository<T extends SQLObject> {
         return objs;
     }
 
-    private void fillOneToManyReferences(T obj) {
-        List<PropertyMap> properties = SchemaHelper.getOneToManyColumns(clazz);
-        for (PropertyMap p : properties) {
-            try {
-                LinkedList<? extends SQLObject> list =  Repository.GetRepository(p.clazz)
-                            .findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
-                obj.setPropertyValue(p.fieldName, list);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-            }
+    private void fillOneToManyReferences(T obj, PropertyMap p) {
+        try {
+            LinkedList<? extends SQLObject> list = Repository.GetRepository(p.clazz)
+                    .findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
+            obj.setPropertyValue(p.field, list);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
         }
     }
 
-    private void fillManyToOneReferences(T obj) {
-        List<PropertyMap> properties = SchemaHelper.getManyToOneColumns(clazz);
-        for (PropertyMap p : properties) {
-            try {
-                obj.setPropertyValue(p.fieldName.substring(11), Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName)));
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-            }
+    private void fillManyToOneReferences(T obj, PropertyMap p) {
+        try {
+            obj.setPropertyValue(p.field,
+                    Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName)));
+        } catch (IllegalArgumentException | IllegalAccessException e) {
         }
     }
 
-    private void fillManyToManyReferences(T obj) {
-        List<PropertyMap> properties = SchemaHelper.getManyToManyColumns(clazz);
-        for (PropertyMap p : properties) {
-            try {
-                String targetPrimaryKey = SchemaHelper.getPrimaryKey(p.clazz).columnName;
-                String tableName = SchemaHelper.getTableName(p.clazz);
-                LinkedList<? extends SQLObject> l = Repository.GetRepository(p.clazz).Join(new JoinTuple("INNER JOIN", p.tableName, tableName+"."+targetPrimaryKey +" = " + p.tableName + "." + p.inversedColumnName)).findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
-                obj.setPropertyValue(p.fieldName, l);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
+    private void fillOneToOneReferences(T obj, PropertyMap p) {
+        try {
+            Object res = null;
+            if(!p.columnName.equals("")){
+                res = Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName));
+            }else{
+                res = Repository.GetRepository(p.clazz)
+                    .findOneBy(Arrays.asList(new FilterTuple(p.inversedColumnName, obj.getKeyValue())));
             }
+            obj.setPropertyValue(p.field, res);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+        }
+    }
+
+    private void fillManyToManyReferences(T obj, PropertyMap p) {
+        try {
+            String targetPrimaryKey = SchemaHelper.getPrimaryKey(p.clazz).columnName;
+            String tableName = SchemaHelper.getTableName(p.clazz);
+            LinkedList<? extends SQLObject> l = Repository.GetRepository(p.clazz)
+                    .Join(new JoinTuple("INNER JOIN", p.tableName,
+                            tableName + "." + targetPrimaryKey + " = " + p.tableName + "." + p.inversedColumnName))
+                    .findBy(Arrays.asList(new FilterTuple(p.columnName, obj.getKeyValue())));
+            obj.setPropertyValue(p.field, l);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
         }
     }
 }

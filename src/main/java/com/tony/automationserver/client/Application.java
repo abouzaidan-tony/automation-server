@@ -13,12 +13,28 @@ public class Application extends SQLObject {
 
     @PrimaryKey
     @Property(name="id", type=SQLTypes.Long)
-    public Long id;
+    private Long id;
 
     @Property(name="app_token", type = SQLTypes.String)
     public String token;
 
     public Application(HashMap<String, Object> map) throws Exception {
         super(map);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

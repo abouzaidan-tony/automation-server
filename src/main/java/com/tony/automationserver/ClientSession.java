@@ -60,16 +60,16 @@ public class ClientSession extends Session {
         if (client == null)
             return;
         logger.info(() -> "Removing client " + client);
-        client.connected = false;
+        client.setConnected(false);
         EntityManager.GetInstance().Update(client);
         EntityManager.GetInstance().flush();
         try {
             lock.acquire();
         } catch (InterruptedException e) {}
         if(client instanceof User)
-            userSessions.remove(client.id);
+            userSessions.remove(client.getId());
         else
-            deviceSessions.remove(client.id);
+            deviceSessions.remove(client.getId());
         lock.release();
         client = null;
     }

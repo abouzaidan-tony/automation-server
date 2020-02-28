@@ -105,7 +105,7 @@ public class EntityManager{
         Object key = helper.ExecuteNonQuery(query, object.getPropertyArray(false, false));
 
         try {
-            object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).fieldName, key);
+            object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).field, key);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -122,7 +122,7 @@ public class EntityManager{
 
         Class<? extends SQLObject> clazz = object.getClass();
 
-        List<PropertyMap> properties = SchemaHelper.getColumns(clazz);
+        List<PropertyMap> properties = SchemaHelper.getCombinedColumns(clazz);
 
         for (PropertyMap prop : properties) {
 
@@ -153,13 +153,13 @@ public class EntityManager{
         Class<? extends SQLObject> clazz = object.getClass();
         PropertyMap key = SchemaHelper.getPrimaryKey(clazz);
         String query = getDeleteQuery(clazz).replace("@cond", key.columnName + "= ?");
-        Object id = object.getPropertyValue(key.fieldName);
+        Object id = object.getPropertyValue(key.field);
         Object[] params = new Object[] { id };
         helper.ExecuteNonQuery(query, params);
         try {
-            object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).fieldName, null);
+            object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).field, null);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            try { object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).fieldName, 0);}
+            try { object.setPropertyValue(SchemaHelper.getPrimaryKey(clazz).field, 0);}
             catch (Exception ex) {}
         }
         

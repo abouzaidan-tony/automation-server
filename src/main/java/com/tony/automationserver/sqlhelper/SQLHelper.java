@@ -6,6 +6,8 @@ import java.util.LinkedList;
 
 import com.tony.automationserver.settings.Settings;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,6 +15,8 @@ import org.json.JSONObject;
 public class SQLHelper {
 
     private static SQLHelper instance;
+
+    private static Logger logger = LogManager.getLogger(SQLHelper.class.getName());
 
     private SQLHelper(){}
 
@@ -171,6 +175,7 @@ public class SQLHelper {
     {
     	LinkedList<HashMap<String, Object>> results = new LinkedList<HashMap<String, Object>>();
         try{
+            logger.trace(query);
             PreparedStatement preparedStmt = preparedStatement(connection, query, parameters);
             ResultSet rs = preparedStmt.executeQuery();
             results = getDataFromResultSet(rs, resultTypes);

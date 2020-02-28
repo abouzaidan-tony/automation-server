@@ -13,13 +13,13 @@ public abstract class Client extends SQLObject {
 
     @PrimaryKey
     @Property(name="id", type=SQLTypes.Long)
-    public Long id;
+    private Long id;
 
     @Property(name = "connected", type = SQLTypes.Boolean)
-    public boolean connected;
+    private boolean connected;
 
     @ManyToOne(targetEntity = Account.class, inverserdBy = "account_id")
-    public Account account;
+    private Account account;
 
     public Client() {}
 
@@ -28,4 +28,28 @@ public abstract class Client extends SQLObject {
     }
 
     public abstract String  getKey();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
 }

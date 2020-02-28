@@ -12,8 +12,8 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="com.tony" level="info" />
-        <Root level="info">
+        <Logger name="com.tony" level="trace" />
+        <Root level="trace">
             <AppenderRef ref="STDOUT" />
             <AppenderRef ref="FILE" />
         </Root>

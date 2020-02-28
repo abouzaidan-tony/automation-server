@@ -53,7 +53,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
     
     protected final void sendMessage(Message message, Client c, Client origin){
         logger.debug(() -> "Sending message from" + origin + " to " + c);
-        Session session = getSessionById(c.id);
+        Session session = getSessionById(c.getId());
 
         if (session == null)
             throw new DeviceNotConnectedException();
@@ -67,9 +67,9 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
                     .setMessage("Could not forward message").setMessageType(MessageType.ERROR).build();
             try {
                 if(origin instanceof User)
-                    ClientSession.getUserSessions().get(origin.id).sendMessage(m.toByteArray());
+                    ClientSession.getUserSessions().get(origin.getId()).sendMessage(m.toByteArray());
                 else
-                    ClientSession.getDevicesSessions().get(origin.id).sendMessage(m.toByteArray());
+                    ClientSession.getDevicesSessions().get(origin.getId()).sendMessage(m.toByteArray());
             } catch (Exception exx) {
                 logger.error(exx.getMessage(), exx);
             }

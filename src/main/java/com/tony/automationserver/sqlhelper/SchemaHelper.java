@@ -2,6 +2,7 @@ package com.tony.automationserver.sqlhelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
 import com.tony.automationserver.sqlhelper.annotation.ManyToMany;
 import com.tony.automationserver.sqlhelper.annotation.ManyToOne;
 import com.tony.automationserver.sqlhelper.annotation.OneToMany;
+import com.tony.automationserver.sqlhelper.annotation.OneToOne;
 import com.tony.automationserver.sqlhelper.annotation.PrimaryKey;
 import com.tony.automationserver.sqlhelper.annotation.Property;
 import com.tony.automationserver.sqlhelper.annotation.Table;
@@ -20,7 +22,7 @@ import com.tony.automationserver.sqlhelper.exception.TableNameNotSetException;
 public class SchemaHelper {
 
     public static class PropertyMap {
-        public final String fieldName;
+        public final Field field;
         public final String columnName;
         public final String inversedColumnName;
         public final SQLTypes type;
@@ -28,8 +30,8 @@ public class SchemaHelper {
         public final String tableName;
         public final Class<? extends SQLObject> clazz;
 
-        public PropertyMap(String fieldName, String columnName, SQLTypes type, boolean isPrimary){
-            this.fieldName = fieldName;
+        public PropertyMap(Field field, String columnName, SQLTypes type, boolean isPrimary){
+            this.field = field;
             this.columnName = columnName;
             this.type = type;
             this.isPrimary = isPrimary;
@@ -38,8 +40,8 @@ public class SchemaHelper {
             tableName = null;
         }
 
-        public PropertyMap(String fieldName, String columnName, Class<? extends SQLObject> clazz) {
-            this.fieldName = fieldName;
+        public PropertyMap(Field field, String columnName, Class<? extends SQLObject> clazz) {
+            this.field = field;
             this.columnName = columnName;
             type = null;
             isPrimary = false;
@@ -48,8 +50,18 @@ public class SchemaHelper {
             tableName = null;
         }
 
-        public PropertyMap(String fieldName, String columnName, Class<? extends SQLObject> clazz, SQLTypes type) {
-            this.fieldName = fieldName;
+        public PropertyMap(Field field, String columnName, String inversedColumnName, Class<? extends SQLObject> clazz) {
+            this.field = field;
+            this.columnName = columnName;
+            type = null;
+            isPrimary = false;
+            this.clazz = clazz;
+            this.inversedColumnName = inversedColumnName;
+            tableName = null;
+        }
+
+        public PropertyMap(Field field, String columnName, Class<? extends SQLObject> clazz, SQLTypes type) {
+            this.field = field;
             this.columnName = columnName;
             this.type = type;
             isPrimary = false;
@@ -58,8 +70,8 @@ public class SchemaHelper {
             tableName = null;
         }
 
-        public PropertyMap(String fieldName, String columnName, String inversedColumnName, String tableName, Class<? extends SQLObject> clazz, SQLTypes type) {
-            this.fieldName = fieldName;
+        public PropertyMap(Field field, String columnName, String inversedColumnName, String tableName, Class<? extends SQLObject> clazz, SQLTypes type) {
+            this.field = field;
             this.columnName = columnName;
             this.type = type;
             isPrimary = false;
@@ -81,7 +93,8 @@ public class SchemaHelper {
         Properties,
         OneToMany,
         ManyToOne,
-        ManyToMany
+        ManyToMany,
+        OneToOne
     }
 
     private static HashMap<CacheKeys, HashMap<Class<? extends SQLObject>, List<PropertyMap>>> cachedData;
@@ -127,31 +140,67 @@ public class SchemaHelper {
         return list;
     }
 
+    private static BiFunction<Field, OneToMany, PropertyMap> OneToManyBiFunction = (f, a) -> {
+        return new PropertyMap(f, a.mappedBy(), a.targetEntity());
+    };
+
+    private static BiFunction<Field, ManyToMany, PropertyMap> ManyToManyBiFunction = (f, a) -> {
+        return new PropertyMap(f, a.mappedBy(), a.inversedBy(), a.joinTable(), a.targetEntity(), SQLTypes.Long);
+    };
+
+    private static BiFunction<Field, ManyToOne, PropertyMap> ManyToOneBiFunction = (f, a) -> {
+        return new PropertyMap(f, 
+                    a.inverserdBy(), 
+                    a.targetEntity(), 
+                    SchemaHelper.getPrimaryKey(a.targetEntity()).type);
+    };
+
+    private static BiFunction<Field, OneToOne, PropertyMap> OneToOneBiFunction = (f, a) -> {
+        return new PropertyMap(f, a.inverserdBy(), a.mappedBy(), a.targetEntity());
+    };
+
+    public static <T extends SQLObject, A extends Annotation> PropertyMap getXProperty(Class<T> clazz, Field f, Class<A> relation,
+            CacheKeys c, BiFunction<Field, A, PropertyMap> filler) {
+        List<PropertyMap> lst = getAnnotatedColumns(clazz, relation, c, filler);
+        for (PropertyMap p : lst) {
+            if (p.field.equals(f))
+                return p;
+        }
+        return null;
+    }
+
+    public static <T extends SQLObject> PropertyMap getOneToManyProperty(Class<T> clazz, Field f){
+        return getXProperty(clazz, f, OneToMany.class, CacheKeys.OneToMany, OneToManyBiFunction);
+    }
+
+    public static <T extends SQLObject> PropertyMap getOneToOneProperty(Class<T> clazz, Field f) {
+        return getXProperty(clazz, f, OneToOne.class, CacheKeys.OneToOne, OneToOneBiFunction);
+    }
+
+    public static <T extends SQLObject> PropertyMap getManyToManyProperty(Class<T> clazz, Field f) {
+        return getXProperty(clazz, f, ManyToMany.class, CacheKeys.ManyToMany, ManyToManyBiFunction);
+    }
+
+    public static <T extends SQLObject> PropertyMap getManyToOneProperty(Class<T> clazz, Field f) {
+        return getXProperty(clazz, f, ManyToOne.class, CacheKeys.ManyToOne, ManyToOneBiFunction);
+    }
+
     public static <T extends SQLObject> List<PropertyMap> getOneToManyColumns(Class<T> clazz) {
-        return getAnnotatedColumns(clazz, OneToMany.class, CacheKeys.OneToMany, 
-                (f, p) -> new PropertyMap(f.getName(), 
-                        p.mappedBy(), 
-                        p.targetEntity())
-                );
+        return getAnnotatedColumns(clazz, OneToMany.class, CacheKeys.OneToMany, OneToManyBiFunction);
     }
 
     public static <T extends SQLObject> List<PropertyMap> getManyToOneColumns(Class<T> clazz) {
-        return getAnnotatedColumns(clazz, ManyToOne.class, CacheKeys.ManyToOne,
-                (f, p) -> new PropertyMap("inversedBy-".concat(f.getName()), 
-                    p.inverserdBy(), 
-                    p.targetEntity(), 
-                    SchemaHelper.getPrimaryKey(p.targetEntity()).type));
+        return getAnnotatedColumns(clazz, ManyToOne.class, CacheKeys.ManyToOne, ManyToOneBiFunction);
     }
 
     public static <T extends SQLObject> List<PropertyMap> getManyToManyColumns(Class<T> clazz) {
-        return getAnnotatedColumns(clazz, ManyToMany.class, CacheKeys.ManyToMany,
-                (f, p) -> new PropertyMap(f.getName(), p.mappedBy(), p.inversedBy(), p.joinTable(), p.targetEntity(), SQLTypes.Long));
+        return getAnnotatedColumns(clazz, ManyToMany.class, CacheKeys.ManyToMany, ManyToManyBiFunction);
     }
 
     public static <T extends SQLObject> List<PropertyMap> getCombinedColumns(Class<T> clazz)
     {
         List<PropertyMap> map = new ArrayList<>(getAnnotatedColumns(clazz, Property.class, CacheKeys.Properties,
-                    (f, p) -> new PropertyMap(f.getName(), p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class))
+                    (f, p) -> new PropertyMap(f, p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class))
                 ));
             map.addAll(getManyToOneColumns(clazz));
         return map;
@@ -159,7 +208,7 @@ public class SchemaHelper {
 
     public static <T extends SQLObject> List<PropertyMap> getColumns(Class<T> clazz) {
         return getAnnotatedColumns(clazz, Property.class, CacheKeys.Properties,
-                (f, p) -> new PropertyMap(f.getName(), p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class)));
+                (f, p) -> new PropertyMap(f, p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class)));
     }
 
     public static <T extends SQLObject> String getTableName(Class<T> clazz)
@@ -188,7 +237,7 @@ public class SchemaHelper {
         return tableName;
     }
 
-    public static <T extends SQLObject> SQLTypes[] getCombinedColumnsType(Class<T> clazz)
+    public static <T extends SQLObject> SQLTypes[] getColumnsType(Class<T> clazz)
     {
         List<PropertyMap> properties = getCombinedColumns(clazz);
         SQLTypes[] types = new SQLTypes[properties.size()];
@@ -213,7 +262,7 @@ public class SchemaHelper {
                 if (!field.isAnnotationPresent(PrimaryKey.class))
                     continue;
                 Property p = field.getAnnotation(Property.class);
-                primaryKey = new PropertyMap(field.getName(), p.name(), p.type(), true);
+                primaryKey = new PropertyMap(field, p.name(), p.type(), true);
                 break;
             }
 
@@ -226,5 +275,27 @@ public class SchemaHelper {
         if(primaryKey == null)
             throw new PrimaryKeyNotFoundException();
         return primaryKey;
+    }
+
+    public static Field getRelatedField(Method thisMethod, Class<?> clazz){
+        Class<?> returnType = thisMethod.getReturnType();
+
+        Field myField = null;
+
+        do{
+            for(Field f : clazz.getDeclaredFields()){
+                if(!f.getType().equals(returnType))
+                    continue;
+                if(!thisMethod.getName().toLowerCase().endsWith(f.getName().toLowerCase()))
+                    continue;
+                myField = f;
+                clazz = null;
+                break;
+            }
+            if(clazz != null)
+                clazz = clazz.getSuperclass();
+        }while(clazz != null);
+
+        return myField;
     }
 }
