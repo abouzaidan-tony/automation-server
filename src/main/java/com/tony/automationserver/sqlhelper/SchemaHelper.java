@@ -30,7 +30,7 @@ public class SchemaHelper {
         public final String tableName;
         public final Class<? extends SQLObject> clazz;
 
-        public PropertyMap(Field field, String columnName, SQLTypes type, boolean isPrimary){
+        public PropertyMap(Field field, String columnName, SQLTypes type, boolean isPrimary) {
             this.field = field;
             this.columnName = columnName;
             this.type = type;
@@ -50,7 +50,8 @@ public class SchemaHelper {
             tableName = null;
         }
 
-        public PropertyMap(Field field, String columnName, String inversedColumnName, Class<? extends SQLObject> clazz) {
+        public PropertyMap(Field field, String columnName, String inversedColumnName,
+                Class<? extends SQLObject> clazz) {
             this.field = field;
             this.columnName = columnName;
             type = null;
@@ -70,7 +71,8 @@ public class SchemaHelper {
             tableName = null;
         }
 
-        public PropertyMap(Field field, String columnName, String inversedColumnName, String tableName, Class<? extends SQLObject> clazz, SQLTypes type) {
+        public PropertyMap(Field field, String columnName, String inversedColumnName, String tableName,
+                Class<? extends SQLObject> clazz, SQLTypes type) {
             this.field = field;
             this.columnName = columnName;
             this.type = type;
@@ -81,20 +83,16 @@ public class SchemaHelper {
         }
 
         @Override
-        public boolean equals(Object obj){
-            if(!(obj instanceof PropertyMap))
-                    return false;
+        public boolean equals(Object obj) {
+            if (!(obj instanceof PropertyMap))
+                return false;
             PropertyMap map = (PropertyMap) obj;
             return this.columnName.equals(map.columnName);
         }
     }
 
     private enum CacheKeys {
-        Properties,
-        OneToMany,
-        ManyToOne,
-        ManyToMany,
-        OneToOne
+        Properties, OneToMany, ManyToOne, ManyToMany, OneToOne
     }
 
     private static HashMap<CacheKeys, HashMap<Class<? extends SQLObject>, List<PropertyMap>>> cachedData;
@@ -103,15 +101,15 @@ public class SchemaHelper {
 
     static {
         cachedData = new HashMap<>();
-        for(CacheKeys key : CacheKeys.values())
-        {
+        for (CacheKeys key : CacheKeys.values()) {
             cachedData.put(key, new HashMap<>());
         }
         cachedPrimaryKeys = new HashMap<>();
         cachedTableNames = new HashMap<>();
     }
 
-    public static <T extends SQLObject, A extends Annotation> List<PropertyMap> getAnnotatedColumns(Class<T> clazz, Class<A> annotation, CacheKeys lookupTable, BiFunction<Field, A, PropertyMap> filler) {
+    public static <T extends SQLObject, A extends Annotation> List<PropertyMap> getAnnotatedColumns(Class<T> clazz,
+            Class<A> annotation, CacheKeys lookupTable, BiFunction<Field, A, PropertyMap> filler) {
         HashMap<Class<? extends SQLObject>, List<PropertyMap>> tbl = cachedData.get(lookupTable);
         if (tbl.containsKey(clazz))
             return tbl.get(clazz);
@@ -149,18 +147,15 @@ public class SchemaHelper {
     };
 
     private static BiFunction<Field, ManyToOne, PropertyMap> ManyToOneBiFunction = (f, a) -> {
-        return new PropertyMap(f, 
-                    a.inverserdBy(), 
-                    a.targetEntity(), 
-                    SchemaHelper.getPrimaryKey(a.targetEntity()).type);
+        return new PropertyMap(f, a.inverserdBy(), a.targetEntity(), SchemaHelper.getPrimaryKey(a.targetEntity()).type);
     };
 
     private static BiFunction<Field, OneToOne, PropertyMap> OneToOneBiFunction = (f, a) -> {
         return new PropertyMap(f, a.inverserdBy(), a.mappedBy(), a.targetEntity());
     };
 
-    public static <T extends SQLObject, A extends Annotation> PropertyMap getXProperty(Class<T> clazz, Field f, Class<A> relation,
-            CacheKeys c, BiFunction<Field, A, PropertyMap> filler) {
+    public static <T extends SQLObject, A extends Annotation> PropertyMap getXProperty(Class<T> clazz, Field f,
+            Class<A> relation, CacheKeys c, BiFunction<Field, A, PropertyMap> filler) {
         List<PropertyMap> lst = getAnnotatedColumns(clazz, relation, c, filler);
         for (PropertyMap p : lst) {
             if (p.field.equals(f))
@@ -169,7 +164,7 @@ public class SchemaHelper {
         return null;
     }
 
-    public static <T extends SQLObject> PropertyMap getOneToManyProperty(Class<T> clazz, Field f){
+    public static <T extends SQLObject> PropertyMap getOneToManyProperty(Class<T> clazz, Field f) {
         return getXProperty(clazz, f, OneToMany.class, CacheKeys.OneToMany, OneToManyBiFunction);
     }
 
@@ -197,12 +192,10 @@ public class SchemaHelper {
         return getAnnotatedColumns(clazz, ManyToMany.class, CacheKeys.ManyToMany, ManyToManyBiFunction);
     }
 
-    public static <T extends SQLObject> List<PropertyMap> getCombinedColumns(Class<T> clazz)
-    {
+    public static <T extends SQLObject> List<PropertyMap> getCombinedColumns(Class<T> clazz) {
         List<PropertyMap> map = new ArrayList<>(getAnnotatedColumns(clazz, Property.class, CacheKeys.Properties,
-                    (f, p) -> new PropertyMap(f, p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class))
-                ));
-            map.addAll(getManyToOneColumns(clazz));
+                (f, p) -> new PropertyMap(f, p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class))));
+        map.addAll(getManyToOneColumns(clazz));
         return map;
     }
 
@@ -211,17 +204,15 @@ public class SchemaHelper {
                 (f, p) -> new PropertyMap(f, p.name(), p.type(), f.isAnnotationPresent(PrimaryKey.class)));
     }
 
-    public static <T extends SQLObject> String getTableName(Class<T> clazz)
-    {
-        if(cachedTableNames.containsKey(clazz))
+    public static <T extends SQLObject> String getTableName(Class<T> clazz) {
+        if (cachedTableNames.containsKey(clazz))
             return cachedTableNames.get(clazz);
         Class<?> tempClass = clazz;
         String tableName = null;
-        
+
         do {
 
-            if(tempClass.isAnnotationPresent(Table.class))
-            {
+            if (tempClass.isAnnotationPresent(Table.class)) {
                 tableName = tempClass.getAnnotation(Table.class).name();
                 break;
             }
@@ -232,24 +223,22 @@ public class SchemaHelper {
                 break;
         } while (true);
 
-        if(tableName == null)
+        if (tableName == null)
             throw new TableNameNotSetException();
         return tableName;
     }
 
-    public static <T extends SQLObject> SQLTypes[] getColumnsType(Class<T> clazz)
-    {
+    public static <T extends SQLObject> SQLTypes[] getColumnsType(Class<T> clazz) {
         List<PropertyMap> properties = getCombinedColumns(clazz);
         SQLTypes[] types = new SQLTypes[properties.size()];
-        int i=0;
-        for(PropertyMap p : properties){
+        int i = 0;
+        for (PropertyMap p : properties) {
             types[i++] = p.type;
         }
         return types;
     }
 
-    public static <T extends SQLObject> PropertyMap getPrimaryKey(Class<T> clazz) 
-    {
+    public static <T extends SQLObject> PropertyMap getPrimaryKey(Class<T> clazz) {
         if (cachedPrimaryKeys.containsKey(clazz))
             return cachedPrimaryKeys.get(clazz);
 
@@ -272,29 +261,29 @@ public class SchemaHelper {
                 break;
         } while (true);
 
-        if(primaryKey == null)
+        if (primaryKey == null)
             throw new PrimaryKeyNotFoundException();
         return primaryKey;
     }
 
-    public static Field getRelatedField(Method thisMethod, Class<?> clazz){
+    public static Field getRelatedField(Method thisMethod, Class<?> clazz) {
         Class<?> returnType = thisMethod.getReturnType();
 
         Field myField = null;
 
-        do{
-            for(Field f : clazz.getDeclaredFields()){
-                if(!f.getType().equals(returnType))
+        do {
+            for (Field f : clazz.getDeclaredFields()) {
+                if (!f.getType().equals(returnType))
                     continue;
-                if(!thisMethod.getName().toLowerCase().endsWith(f.getName().toLowerCase()))
+                if (!thisMethod.getName().toLowerCase().endsWith(f.getName().toLowerCase()))
                     continue;
                 myField = f;
                 clazz = null;
                 break;
             }
-            if(clazz != null)
+            if (clazz != null)
                 clazz = clazz.getSuperclass();
-        }while(clazz != null);
+        } while (clazz != null);
 
         return myField;
     }

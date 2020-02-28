@@ -146,8 +146,7 @@ public class Repository<T extends SQLObject> {
         if (temp != null)
             return temp;
         PropertyMap key = SchemaHelper.getPrimaryKey(clazz);
-        LinkedList<T> list = findBy(Arrays.asList(new FilterTuple(key.columnName, primaryKeyValue)));
-        return list.size() == 0 ? null : list.getFirst();
+        return findOneBy(Arrays.asList(new FilterTuple(key.columnName, primaryKeyValue)));
     }
 
     public LinkedList<T> findBy(List<FilterTuple> filters) {
@@ -195,12 +194,12 @@ public class Repository<T extends SQLObject> {
                         Annotation[] annotations = f.getAnnotations();
                         for (Annotation annotation : annotations) {
                             if (annotation instanceof ManyToMany) {
-                                fillManyToManyReferences((T)self, SchemaHelper.getManyToManyProperty(clazz, f));
+                                fillManyToManyReferences((T) self, SchemaHelper.getManyToManyProperty(clazz, f));
                             } else if (annotation instanceof ManyToOne) {
                                 fillManyToOneReferences((T) self, SchemaHelper.getManyToOneProperty(clazz, f));
                             } else if (annotation instanceof OneToMany) {
                                 fillOneToManyReferences((T) self, SchemaHelper.getOneToManyProperty(clazz, f));
-                            }else if (annotation instanceof OneToOne){
+                            } else if (annotation instanceof OneToOne) {
                                 fillOneToOneReferences((T) self, SchemaHelper.getOneToOneProperty(clazz, f));
                             }
                         }
@@ -232,8 +231,7 @@ public class Repository<T extends SQLObject> {
 
     private void fillManyToOneReferences(T obj, PropertyMap p) {
         try {
-            obj.setPropertyValue(p.field,
-                    Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName)));
+            obj.setPropertyValue(p.field, Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName)));
         } catch (IllegalArgumentException | IllegalAccessException e) {
         }
     }
@@ -241,11 +239,11 @@ public class Repository<T extends SQLObject> {
     private void fillOneToOneReferences(T obj, PropertyMap p) {
         try {
             Object res = null;
-            if(!p.columnName.equals("")){
+            if (!p.columnName.equals("")) {
                 res = Repository.GetRepository(p.clazz).find(obj.getMapField(p.columnName));
-            }else{
+            } else {
                 res = Repository.GetRepository(p.clazz)
-                    .findOneBy(Arrays.asList(new FilterTuple(p.inversedColumnName, obj.getKeyValue())));
+                        .findOneBy(Arrays.asList(new FilterTuple(p.inversedColumnName, obj.getKeyValue())));
             }
             obj.setPropertyValue(p.field, res);
         } catch (IllegalArgumentException | IllegalAccessException e) {

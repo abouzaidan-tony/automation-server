@@ -7,18 +7,19 @@ public class StateMachine {
     private State currentState;
     protected ClientSession session;
 
-    public StateMachine(ClientSession session){
+    public StateMachine(ClientSession session) {
         this.session = session;
         currentState = new AuthenticationState(session);
     }
 
-    public void Process(byte [] message){
+    public void Process(byte[] message) {
         currentState.setData(message);
-        do{
+        do {
             State resultState = currentState.Process();
             if (resultState != null)
                 currentState = resultState;
-            else break;
-        }while(currentState.instantExecution());
+            else
+                break;
+        } while (currentState.instantExecution());
     }
 }

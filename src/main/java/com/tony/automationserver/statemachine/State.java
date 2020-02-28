@@ -3,7 +3,7 @@ package com.tony.automationserver.statemachine;
 import com.tony.automationserver.ClientSession;
 
 abstract class State {
-    protected byte [] data;
+    protected byte[] data;
     protected final ClientSession session;
 
     public State(ClientSession session) {
@@ -11,13 +11,13 @@ abstract class State {
         this.session = session;
     }
 
-    public byte [] getData() {
-		return data;
-	}
+    public byte[] getData() {
+        return data;
+    }
 
-	public void setData(byte [] data) {
-		this.data = data;
-	}
+    public void setData(byte[] data) {
+        this.data = data;
+    }
 
     public abstract State Process();
 

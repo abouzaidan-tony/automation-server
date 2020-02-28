@@ -21,6 +21,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
     private static Logger logger = LogManager.getLogger(AbstractMessageAnalyzer.class.getName());
 
     public abstract List<Client> getCandidates(Client client);
+
     public abstract Session getSessionById(long id);
 
     @Override
@@ -28,30 +29,29 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
         Client client = (Client) message.getClient();
 
         boolean isBroadcast = false;
-        if(message.getMessageType() == MessageType.BROADCAST) {
+        if (message.getMessageType() == MessageType.BROADCAST) {
             isBroadcast = true;
             logger.debug(() -> "Broadcast message from " + client);
         }
 
         Client c = null;
         for (Client var : getCandidates(client)) {
-            if(var.getKey().equals(message.getOrigin()))
-            {
+            if (var.getKey().equals(message.getOrigin())) {
                 c = var;
-                if(!isBroadcast)
+                if (!isBroadcast)
                     break;
                 sendMessage(message, c, client);
             }
         }
 
-        if(c == null)
+        if (c == null)
             throw new DeviceNotFoundException();
 
-        if(!isBroadcast)
+        if (!isBroadcast)
             sendMessage(message, c, client);
     }
-    
-    protected final void sendMessage(Message message, Client c, Client origin){
+
+    protected final void sendMessage(Message message, Client c, Client origin) {
         logger.debug(() -> "Sending message from" + origin + " to " + c);
         Session session = getSessionById(c.getId());
 
@@ -66,7 +66,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
             Message m = new MessageBuilder().setKeepAlive(true).setOrigin(origin)
                     .setMessage("Could not forward message").setMessageType(MessageType.ERROR).build();
             try {
-                if(origin instanceof User)
+                if (origin instanceof User)
                     ClientSession.getUserSessions().get(origin.getId()).sendMessage(m.toByteArray());
                 else
                     ClientSession.getDevicesSessions().get(origin.getId()).sendMessage(m.toByteArray());

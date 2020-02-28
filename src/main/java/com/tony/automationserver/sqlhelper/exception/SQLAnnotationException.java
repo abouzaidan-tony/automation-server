@@ -5,8 +5,8 @@ public abstract class SQLAnnotationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public SQLAnnotationException(String message){
+    public SQLAnnotationException(String message) {
         super(message);
     }
-    
+
 }

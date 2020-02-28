@@ -62,7 +62,7 @@ public abstract class Session implements OnMessageReadyListener {
     }
 
     public synchronized void close() {
-        if(!running)
+        if (!running)
             return;
         running = false;
         try {
@@ -90,10 +90,10 @@ public abstract class Session implements OnMessageReadyListener {
         }
     }
 
-    public synchronized void writeByte(byte b){
+    public synchronized void writeByte(byte b) {
         try {
             out.write(b);
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.error(ex.getMessage(), ex);
             close();
         }

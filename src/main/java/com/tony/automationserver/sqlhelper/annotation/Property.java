@@ -11,5 +11,6 @@ import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
 @Target(ElementType.FIELD)
 public @interface Property {
     String name();
-	SQLTypes type() default SQLTypes.String;
+
+    SQLTypes type() default SQLTypes.String;
 }

@@ -9,21 +9,19 @@ import com.tony.automationserver.sqlhelper.SQLHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Server 
-{
+public class Server {
     private static Logger logger = LogManager.getLogger(Server.class.getName());
 
-    public static void main( String[] args ) throws IOException {
-        try{
+    public static void main(String[] args) throws IOException {
+        try {
             run(args);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
         }
         logger.warn(() -> "Closing App");
     }
-    
-    public static void run( String[] args ) throws IOException
-    {
+
+    public static void run(String[] args) throws IOException {
         logger.info(() -> "Starting App");
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE user SET connected = 0", null);
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);

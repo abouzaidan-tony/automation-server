@@ -11,6 +11,8 @@ import com.tony.automationserver.sqlhelper.SQLObject;
 @Target(ElementType.FIELD)
 public @interface OneToOne {
     Class<? extends SQLObject> targetEntity();
+
     String inverserdBy() default "";
+
     String mappedBy() default "";
 }

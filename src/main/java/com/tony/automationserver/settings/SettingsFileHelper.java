@@ -15,37 +15,38 @@ import org.json.JSONObject;
 public class SettingsFileHelper {
 
     private static Logger logger = LogManager.getLogger(SettingsFileHelper.class.getName());
-	private static String SETTINGS_FILE_PATH= "settings.json";
-	
-	public static JSONObject readSettings() throws JSONException {
-		String data = null;
-		Path path = Paths.get(SETTINGS_FILE_PATH);
-		try {
-			if (Files.notExists(path)) {
-				BufferedWriter writer = new BufferedWriter(new FileWriter(SETTINGS_FILE_PATH));
-				writer.write(sampleSettings());
-				writer.close();
-//				Logger.getInstance().log("Failed to read settings. Please update the settings file and try again");
-			}
-			data = new String(Files.readAllBytes(path));
-		} catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
-			
-		}
-		return new JSONObject(data);
-	}
+    private static String SETTINGS_FILE_PATH = "settings.json";
 
-	private static String sampleSettings() {
-		JSONObject jsonObject = new JSONObject();
-		try {
-			jsonObject.put("host", "insert host name here");
-			jsonObject.put("port", "insert port here");
-			jsonObject.put("database", "insert db name here");
-			jsonObject.put("user", "insert db user here");
-			jsonObject.put("password", "insert db password here");
-		} catch (JSONException e) {
-			logger.error(e.getMessage(), e);
-		}
-		return jsonObject.toString();
-	}
+    public static JSONObject readSettings() throws JSONException {
+        String data = null;
+        Path path = Paths.get(SETTINGS_FILE_PATH);
+        try {
+            if (Files.notExists(path)) {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(SETTINGS_FILE_PATH));
+                writer.write(sampleSettings());
+                writer.close();
+                // Logger.getInstance().log("Failed to read settings. Please update the settings
+                // file and try again");
+            }
+            data = new String(Files.readAllBytes(path));
+        } catch (IOException ex) {
+            logger.error(ex.getMessage(), ex);
+
+        }
+        return new JSONObject(data);
+    }
+
+    private static String sampleSettings() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("host", "insert host name here");
+            jsonObject.put("port", "insert port here");
+            jsonObject.put("database", "insert db name here");
+            jsonObject.put("user", "insert db user here");
+            jsonObject.put("password", "insert db password here");
+        } catch (JSONException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return jsonObject.toString();
+    }
 }

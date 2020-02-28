@@ -7,7 +7,7 @@ public class FinalState extends State {
     public FinalState(ClientSession session) {
         super(session);
     }
-    
+
     @Override
     public State Process() {
         session.close();

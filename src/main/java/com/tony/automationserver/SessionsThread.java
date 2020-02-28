@@ -32,11 +32,11 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
         logger.debug(() -> "Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
         logger.debug(() -> "new size is " + (queue.size() + sessions.size()));
-        if(wasEmpty)
+        if (wasEmpty)
             halter.release();
     }
-    
-    public synchronized int getSize(){
+
+    public synchronized int getSize() {
         return sessions.size() + queue.size();
     }
 
@@ -49,7 +49,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
         int sleepTime = 2;
         int maxSleepTime = 3000;
         int noDataCount = 0;
- 
+
         BufferedInputStream bf = null;
 
         while (true) {
@@ -58,12 +58,12 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                 Thread.sleep(sleepTime);
 
                 noDataCount = 0;
-                
+
                 Session session = null;
 
-                boolean isEmpty= true;
+                boolean isEmpty = true;
 
-                synchronized (this){
+                synchronized (this) {
                     for (Session s : queue) {
                         sessions.add(s);
                     }
@@ -71,29 +71,28 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     isEmpty = sessions.size() == 0;
                 }
 
-                if(isEmpty) {
+                if (isEmpty) {
                     logger.debug(() -> "Aquiring Lock");
                     halter.acquire();
                     logger.debug(() -> "Resuming");
                 }
 
-
                 iterator = sessions.iterator();
 
-                do{
-                    
-                    synchronized(this){
-                        if(iterator.hasNext())
+                do {
+
+                    synchronized (this) {
+                        if (iterator.hasNext())
                             session = iterator.next();
                         else
                             session = null;
                     }
 
-                    if(session == null)
+                    if (session == null)
                         break;
 
-                    if(!session.isRunning()){
-                        synchronized(this){
+                    if (!session.isRunning()) {
+                        synchronized (this) {
                             iterator.remove();
                             logger.debug(() -> getName() + " removing session, new size " + queue.size());
                         }
@@ -101,56 +100,55 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     }
 
                     InputStream input = session.getInputStream();
-                    
+
                     bf = new BufferedInputStream(input);
 
                     try {
 
-                        if(!session.isRunning())
-                        {
-                            synchronized(this){
+                        if (!session.isRunning()) {
+                            synchronized (this) {
                                 iterator.remove();
                                 logger.debug(() -> getName() + " removing session, new size " + queue.size());
                             }
                             continue;
                         }
 
-                        if(bf.available() == 0)
-                        {
+                        if (bf.available() == 0) {
                             noDataCount++;
                             continue;
                         }
-                        
+
                         length = input.read(buffer, 0, buffer.length);
-        
-                        if(length < 0)
+
+                        if (length < 0)
                             throw new IOException();
-                        
-                        if (session.getDataReceivedListener() != null);
-                            session.getDataReceivedListener().OnDataReceived(buffer, length);
-        
+
+                        if (session.getDataReceivedListener() != null)
+                            ;
+                        session.getDataReceivedListener().OnDataReceived(buffer, length);
+
                     } catch (Exception ex) {
                         session.close();
                         iterator.remove();
                     }
 
-                }while(true);
-              
+                } while (true);
+
             } catch (Exception ex) {
                 logger.error(ex.getMessage());
             }
 
             int existingLength = 0;
-            synchronized(this){
+            synchronized (this) {
                 existingLength = sessions.size();
             }
 
-            if(existingLength == noDataCount)
+            if (existingLength == noDataCount)
                 sleepTime += 1;
             else
                 sleepTime -= 500;
 
-            if(sleepTime > maxSleepTime)
+            if (sleepTime > maxSleepTime)
                 sleepTime = maxSleepTime;
             else if (sleepTime < 2)
                 sleepTime = 2;

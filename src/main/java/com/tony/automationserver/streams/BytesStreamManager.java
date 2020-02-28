@@ -12,7 +12,6 @@ public class BytesStreamManager extends StreamManager {
     private int length;
     private int remaining;
     private ByteArrayOutputStream byteArray;
-    
 
     public BytesStreamManager() {
         state = STATE.LENGTH1;
@@ -21,13 +20,10 @@ public class BytesStreamManager extends StreamManager {
         byteArray = new ByteArrayOutputStream();
     }
 
-    public void OnDataReceived(byte[] buffer, int len) 
-    {
+    public void OnDataReceived(byte[] buffer, int len) {
         int offset = 0;
-        while (offset < len) 
-        {
-            switch (state) 
-            {
+        while (offset < len) {
+            switch (state) {
                 case LENGTH1:
                     length = (buffer[offset] << 24) & 0xFF000000;
                     offset++;
@@ -39,7 +35,7 @@ public class BytesStreamManager extends StreamManager {
                     offset++;
                     break;
                 case LENGTH3:
-                    length |= (buffer[offset] <<  8) & 0x0000FF00;
+                    length |= (buffer[offset] << 8) & 0x0000FF00;
                     state = STATE.LENGTH4;
                     offset++;
                     break;
@@ -48,7 +44,7 @@ public class BytesStreamManager extends StreamManager {
                     state = STATE.DATA;
                     remaining = length;
                     byteArray.reset();
-                    if(length == 0)
+                    if (length == 0)
                         state = STATE.LENGTH1;
                     offset++;
                     if (remaining == 0) {
@@ -61,9 +57,9 @@ public class BytesStreamManager extends StreamManager {
                     remaining -= min;
                     offset += min;
 
-                    if(remaining <= 0) {
+                    if (remaining <= 0) {
                         state = STATE.LENGTH1;
-                        if(messageReadyListener != null)
+                        if (messageReadyListener != null)
                             messageReadyListener.OnMessageReady(byteArray.toByteArray());
                         byteArray.reset();
                     }
@@ -71,17 +67,17 @@ public class BytesStreamManager extends StreamManager {
         }
     }
 
-    public byte[] formatStream(byte[] msg){
-            if(msg == null)
-                return new byte[]{0, 0, 0, 0};
-            byte[] r = new byte[msg.length + 4];
-            int length = msg.length;
-            r[0] = (byte)((length & 0xFF000000) >> 24);
-            r[1] = (byte)((length & 0x00FF0000) >> 16);
-            r[2] = (byte)((length & 0x0000FF00) >> 8);
-            r[3] = (byte)((length & 0x000000FF));
-            System.arraycopy(msg, 0, r, 4, msg.length);
-            return r;
-        }
-    
+    public byte[] formatStream(byte[] msg) {
+        if (msg == null)
+            return new byte[] { 0, 0, 0, 0 };
+        byte[] r = new byte[msg.length + 4];
+        int length = msg.length;
+        r[0] = (byte) ((length & 0xFF000000) >> 24);
+        r[1] = (byte) ((length & 0x00FF0000) >> 16);
+        r[2] = (byte) ((length & 0x0000FF00) >> 8);
+        r[3] = (byte) ((length & 0x000000FF));
+        System.arraycopy(msg, 0, r, 4, msg.length);
+        return r;
+    }
+
 }

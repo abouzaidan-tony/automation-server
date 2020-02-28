@@ -65,8 +65,9 @@ public class ClientSession extends Session {
         EntityManager.GetInstance().flush();
         try {
             lock.acquire();
-        } catch (InterruptedException e) {}
-        if(client instanceof User)
+        } catch (InterruptedException e) {
+        }
+        if (client instanceof User)
             userSessions.remove(client.getId());
         else
             deviceSessions.remove(client.getId());

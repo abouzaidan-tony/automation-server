@@ -14,11 +14,11 @@ import org.apache.logging.log4j.Logger;
 public class UserAuthenticator implements Authenticator<Client> {
 
     private static Logger logger = LogManager.getLogger(UserAuthenticator.class.getName());
-    
+
     @Override
     public Client Authenticate(byte[] data) {
         logger.debug(() -> "Authenticating Device");
-        if(data.length != 36){
+        if (data.length != 36) {
             logger.debug(() -> "Invalid authentication data");
             return null;
         }
@@ -29,7 +29,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         Account account = EntityManager.GetInstance().GetRepository(Account.class)
                 .findOneBy(new FilterTuple("token", userToken));
 
-        if(account == null) {
+        if (account == null) {
             logger.debug(() -> "Authentication failed : account not found");
             return null;
         }
@@ -38,15 +38,14 @@ public class UserAuthenticator implements Authenticator<Client> {
 
         boolean found = false;
         for (Application var : account.getSubscriptions()) {
-            if(var.token.equals(appToken)){
+            if (var.token.equals(appToken)) {
                 found = true;
                 break;
             }
         }
-        
-        if(!found)
+
+        if (!found)
             return null;
-    
 
         User d = null;
 

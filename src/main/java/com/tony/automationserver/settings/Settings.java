@@ -3,65 +3,63 @@ package com.tony.automationserver.settings;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 public class Settings {
-	private static Settings instance = new Settings();
-	private String _host;
-	private String _dbase;
-	private String _user;
-	private String _password;
-	private String _port;
-	
-	private JSONObject settingsObj;
-    
+    private static Settings instance = new Settings();
+    private String _host;
+    private String _dbase;
+    private String _user;
+    private String _password;
+    private String _port;
+
+    private JSONObject settingsObj;
+
     private boolean init;
 
-	public Settings() {
+    public Settings() {
         init = false;
-	}
+    }
 
-	public static Settings getInstance() {
-		return instance;
-	}
+    public static Settings getInstance() {
+        return instance;
+    }
 
-	public String host() {
-		return _host;
-	}
+    public String host() {
+        return _host;
+    }
 
-	public String database() {
-		return _dbase;
-	}
+    public String database() {
+        return _dbase;
+    }
 
-	public String user() {
-		return _user;
-	}
+    public String user() {
+        return _user;
+    }
 
-	public String password() {
-		return _password;
-	}
+    public String password() {
+        return _password;
+    }
 
-	public String port()
-	{
-		return _port;
-	}
+    public String port() {
+        return _port;
+    }
 
-    public void init() throws JSONException { //inits settings from conf file
+    public void init() throws JSONException { // inits settings from conf file
         if (init)
             return;
         init = true;
-		settingsObj = SettingsFileHelper.readSettings();
-		_host = settingsObj.getString("host");
-		_dbase = settingsObj.getString("database");
-		_user = settingsObj.getString("user");
-		_password = settingsObj.getString("password");
-		_port = settingsObj.getString("port");
-	}
+        settingsObj = SettingsFileHelper.readSettings();
+        _host = settingsObj.getString("host");
+        _dbase = settingsObj.getString("database");
+        _user = settingsObj.getString("user");
+        _password = settingsObj.getString("password");
+        _port = settingsObj.getString("port");
+    }
 
-	public String getString(String key){
-		return settingsObj.getString(key);
-	}
+    public String getString(String key) {
+        return settingsObj.getString(key);
+    }
 
-	public int getInt(String key){
-		return settingsObj.getInt(key);
-	}
+    public int getInt(String key) {
+        return settingsObj.getInt(key);
+    }
 }

@@ -11,7 +11,10 @@ import com.tony.automationserver.sqlhelper.SQLObject;
 @Target(ElementType.FIELD)
 public @interface ManyToMany {
     Class<? extends SQLObject> targetEntity();
+
     String mappedBy();
+
     String inversedBy();
+
     String joinTable();
 }

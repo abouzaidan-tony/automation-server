@@ -11,5 +11,6 @@ import com.tony.automationserver.sqlhelper.SQLObject;
 @Target(ElementType.FIELD)
 public @interface ManyToOne {
     Class<? extends SQLObject> targetEntity();
+
     String inverserdBy();
 }

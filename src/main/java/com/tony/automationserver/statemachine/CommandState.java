@@ -30,44 +30,41 @@ public class CommandState extends State {
 
         logger.debug(() -> "Processing command from " + session.getClient());
 
-        try{
+        try {
             message = new Message(data, session.getClient());
-            
-            if(!message.KeepAlive())
+
+            if (!message.KeepAlive())
                 nextState = new FinalState(session);
 
-            if(message.getMessageType() == MessageType.ECHO) {
+            if (message.getMessageType() == MessageType.ECHO) {
                 message.setOrigin(session.getClient().getKey());
                 session.sendMessage(message.toByteArray());
             } else {
                 analyzer.Process(message);
             }
 
-        }catch(IllegalArgumentException ex){
+        } catch (IllegalArgumentException ex) {
             logger.warn(() -> "Wrong message structure " + session.getClient());
-            message = new MessageBuilder()
-                .setOrigin(session.getClient().getKey())
-                .setMessage("Wrong Message Format")
-                .setMessageType(MessageType.ERROR)
-                .build();
+            message = new MessageBuilder().setOrigin(session.getClient().getKey()).setMessage("Wrong Message Format")
+                    .setMessageType(MessageType.ERROR).build();
 
-        }catch(DeviceNotConnectedException | DeviceNotFoundException ex) {
+        } catch (DeviceNotConnectedException | DeviceNotFoundException ex) {
             final String str = session.getClient() + " -> " + message.getOrigin();
             logger.info(() -> ex.getMessage() + " " + str);
-            message = new MessageBuilder().setOrigin(message.getOrigin())
-                    .setMessage(ex.getMessage()).setMessageType(MessageType.ERROR).build();
-        }catch(IOException ex){
+            message = new MessageBuilder().setOrigin(message.getOrigin()).setMessage(ex.getMessage())
+                    .setMessageType(MessageType.ERROR).build();
+        } catch (IOException ex) {
             logger.error(session.getClient() + " " + ex.getMessage(), ex);
         }
 
-        try{
-            if(message != null)
+        try {
+            if (message != null)
                 session.sendMessage(message.toByteArray());
-        }catch(IOException ex){
+        } catch (IOException ex) {
             logger.error(session.getClient() + " " + ex.getMessage(), ex);
         }
-        
-        return nextState;    
+
+        return nextState;
     }
 
     @Override

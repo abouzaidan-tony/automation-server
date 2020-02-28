@@ -11,15 +11,15 @@ import org.apache.logging.log4j.Logger;
 public class CacheCleaner extends Thread {
 
     private static Logger logger = LogManager.getLogger(CacheCleaner.class.getName());
-    
+
     @Override
     public void run() {
-        while(true){
-            try{
+        while (true) {
+            try {
                 for (Map<Object, SQLObject> var : Repository.getCaches().values())
                     var.clear();
                 Thread.sleep(120000);
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);
             }
         }

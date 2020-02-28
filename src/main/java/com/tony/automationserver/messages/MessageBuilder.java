@@ -10,26 +10,26 @@ public class MessageBuilder {
     private String origin;
     private byte keepAlive;
 
-    public MessageBuilder(){
+    public MessageBuilder() {
 
     }
 
-    public MessageBuilder setMessageType(MessageType type){
+    public MessageBuilder setMessageType(MessageType type) {
         this.type = type;
         return this;
     }
 
-    public MessageBuilder setMessage(byte[] message){
+    public MessageBuilder setMessage(byte[] message) {
         this.message = message;
         return this;
     }
 
-    public MessageBuilder setMessage(String message){
+    public MessageBuilder setMessage(String message) {
         this.message = message.getBytes();
         return this;
     }
 
-    public MessageBuilder setOrigin(Client origin){
+    public MessageBuilder setOrigin(Client origin) {
         this.origin = origin.getKey();
         return this;
     }
@@ -40,7 +40,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder setKeepAlive(boolean keepAlive) {
-        this.keepAlive = (byte)(keepAlive ? 1 : 0);
+        this.keepAlive = (byte) (keepAlive ? 1 : 0);
         return this;
     }
 

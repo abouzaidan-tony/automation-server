@@ -43,17 +43,18 @@ public abstract class SQLObject {
 
     final Object[] getPropertyArray(boolean primary_is_last, boolean combined) {
 
-        List<PropertyMap> properties = combined ? SchemaHelper.getCombinedColumns(this.getClass()) : SchemaHelper.getColumns(this.getClass());
+        List<PropertyMap> properties = combined ? SchemaHelper.getCombinedColumns(this.getClass())
+                : SchemaHelper.getColumns(this.getClass());
 
         Object[] pros = new Object[properties.size()];
 
         PropertyMap key = SchemaHelper.getPrimaryKey(this.getClass());
 
-        int i=0;
+        int i = 0;
         boolean skipped = false;
         for (PropertyMap var : properties) {
-            if(primary_is_last && !skipped) {
-                if(var.equals(key)) {
+            if (primary_is_last && !skipped) {
+                if (var.equals(key)) {
                     skipped = true;
                     continue;
                 }
@@ -66,17 +67,23 @@ public abstract class SQLObject {
         return pros;
     }
 
-    void PreInsert(){}
+    void PreInsert() {
+    }
 
-    void PostInsert(){}
+    void PostInsert() {
+    }
 
-    void PreUpdate(){}
+    void PreUpdate() {
+    }
 
-    void PostUpdate(){}
+    void PostUpdate() {
+    }
 
-    void PreDelete(){}
+    void PreDelete() {
+    }
 
-    void PostDelete(){}
+    void PostDelete() {
+    }
 
     Object getKeyValue() {
         Field field = SchemaHelper.getPrimaryKey(this.getClass()).field;
@@ -86,20 +93,20 @@ public abstract class SQLObject {
     @Override
     public boolean equals(Object obj) {
         Object myKey = this.getKeyValue();
-        if(obj == null)
+        if (obj == null)
             return false;
-        if(!(obj instanceof SQLObject))
+        if (!(obj instanceof SQLObject))
             return obj.equals(getKeyValue());
-        if(!this.getClass().equals(obj.getClass()))
+        if (!this.getClass().equals(obj.getClass()))
             return false;
-        
-        Object otherKey = ((SQLObject)obj).getKeyValue();
-        if(myKey == null || otherKey == null)
+
+        Object otherKey = ((SQLObject) obj).getKeyValue();
+        if (myKey == null || otherKey == null)
             return false;
         return myKey.equals(otherKey);
     }
 
-    Object getMapField(String columnName){
+    Object getMapField(String columnName) {
         return map.get(columnName);
     }
 
