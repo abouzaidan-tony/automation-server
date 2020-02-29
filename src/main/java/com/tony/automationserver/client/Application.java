@@ -1,15 +1,12 @@
 package com.tony.automationserver.client;
 
-import java.util.HashMap;
-
-import com.tony.automationserver.sqlhelper.SQLObject;
-import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
-import com.tony.automationserver.sqlhelper.annotation.PrimaryKey;
-import com.tony.automationserver.sqlhelper.annotation.Property;
-import com.tony.automationserver.sqlhelper.annotation.Table;
+import com.tony.sqlhelper.helper.SQLHelper.SQLTypes;
+import com.tony.sqlhelper.annotation.PrimaryKey;
+import com.tony.sqlhelper.annotation.Property;
+import com.tony.sqlhelper.annotation.Table;
 
 @Table(name = "application")
-public class Application extends SQLObject {
+public class Application {
 
     @PrimaryKey
     @Property(name="id", type=SQLTypes.Long)
@@ -17,10 +14,6 @@ public class Application extends SQLObject {
 
     @Property(name="app_token", type = SQLTypes.String)
     public String token;
-
-    public Application(HashMap<String, Object> map) throws Exception {
-        super(map);
-    }
 
     public Long getId() {
         return id;

@@ -6,7 +6,7 @@ import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.Session;
 import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Client;
-import com.tony.automationserver.sqlhelper.EntityManager;
+import com.tony.sqlhelper.EntityManager;
 
 public class UserMessageAnalyzer extends AbstractMessageAnalyzer {
 

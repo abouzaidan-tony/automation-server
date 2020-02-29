@@ -5,8 +5,8 @@ import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Application;
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.client.Device;
-import com.tony.automationserver.sqlhelper.EntityManager;
-import com.tony.automationserver.sqlhelper.filter.FilterTuple;
+import com.tony.sqlhelper.EntityManager;
+import com.tony.sqlhelper.query.filter.FilterTuple;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

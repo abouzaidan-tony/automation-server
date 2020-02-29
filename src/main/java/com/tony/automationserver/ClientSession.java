@@ -6,7 +6,7 @@ import java.util.concurrent.Semaphore;
 
 import com.tony.automationserver.client.Client;
 import com.tony.automationserver.client.User;
-import com.tony.automationserver.sqlhelper.EntityManager;
+import com.tony.sqlhelper.EntityManager;
 import com.tony.automationserver.statemachine.StateMachine;
 import com.tony.automationserver.streams.BytesStreamManager;
 

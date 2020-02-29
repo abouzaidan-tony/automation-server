@@ -3,14 +3,12 @@ package com.tony.automationserver;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.tony.automationserver.settings.Settings;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SessionPool {
 
-    private static final int MAX_THREADS = Settings.getInstance().getInt("maxThreadNumber");
+    private static final int MAX_THREADS = 15;
     private static Logger logger = LogManager.getLogger(SessionPool.class.getName());
     private static SessionPool pool;
 

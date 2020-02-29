@@ -1,18 +1,16 @@
 package com.tony.automationserver.client;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
-import com.tony.automationserver.sqlhelper.SQLObject;
-import com.tony.automationserver.sqlhelper.SQLHelper.SQLTypes;
-import com.tony.automationserver.sqlhelper.annotation.ManyToMany;
-import com.tony.automationserver.sqlhelper.annotation.OneToMany;
-import com.tony.automationserver.sqlhelper.annotation.PrimaryKey;
-import com.tony.automationserver.sqlhelper.annotation.Property;
-import com.tony.automationserver.sqlhelper.annotation.Table;
+import com.tony.sqlhelper.annotation.ManyToMany;
+import com.tony.sqlhelper.annotation.OneToMany;
+import com.tony.sqlhelper.annotation.PrimaryKey;
+import com.tony.sqlhelper.annotation.Property;
+import com.tony.sqlhelper.annotation.Table;
+import com.tony.sqlhelper.helper.SQLHelper.SQLTypes;
 
 @Table(name = "account")
-public class Account extends SQLObject {
+public class Account {
 
     @PrimaryKey
     @Property(name = "id", type = SQLTypes.Long)
@@ -35,10 +33,6 @@ public class Account extends SQLObject {
 
     @ManyToMany(targetEntity = Application.class, mappedBy = "account_id", inversedBy = "app_id", joinTable = "subscriptions")
     private LinkedList<Application> subscriptions;
-
-    public Account(HashMap<String, Object> map) throws Exception {
-        super(map);
-    }
 
     @Override
     public String toString() {

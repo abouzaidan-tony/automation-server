@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.tony.automationserver.sqlhelper.SQLHelper;
+import com.tony.sqlhelper.helper.SQLHelper;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +21,7 @@ public class Server {
         logger.warn(() -> "Closing App");
     }
 
-    public static void run(String[] args) throws IOException {
+    public static void run(String[] args) throws Exception {
         logger.info(() -> "Starting App");
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE user SET connected = 0", null);
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);
