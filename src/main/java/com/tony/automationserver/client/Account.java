@@ -1,6 +1,6 @@
 package com.tony.automationserver.client;
 
-import java.util.LinkedList;
+import java.util.List;
 
 import com.tony.sqlhelper.annotation.ManyToMany;
 import com.tony.sqlhelper.annotation.OneToMany;
@@ -9,7 +9,7 @@ import com.tony.sqlhelper.annotation.Property;
 import com.tony.sqlhelper.annotation.Table;
 import com.tony.sqlhelper.helper.SQLHelper.SQLTypes;
 
-@Table(name = "account")
+@Table("account")
 public class Account {
 
     @PrimaryKey
@@ -26,13 +26,13 @@ public class Account {
     private String passwordHash;
 
     @OneToMany(targetEntity = Device.class, mappedBy = "account_id")
-    private LinkedList<Client> devices;
+    private List<Client> devices;
 
     @OneToMany(targetEntity = User.class, mappedBy = "account_id")
-    private LinkedList<Client> users;
+    private List<Client> users;
 
-    @ManyToMany(targetEntity = Application.class, mappedBy = "account_id", inversedBy = "app_id", joinTable = "subscriptions")
-    private LinkedList<Application> subscriptions;
+    @ManyToMany(targetEntity = Application.class, referencedBy = "account_id", inversedBy = "app_id", joinTable = "subscriptions")
+    private List<Application> subscriptions;
 
     @Override
     public String toString() {
@@ -71,27 +71,27 @@ public class Account {
         this.passwordHash = passwordHash;
     }
 
-    public LinkedList<Client> getDevices() {
+    public List<Client> getDevices() {
         return devices;
     }
 
-    public void setDevices(LinkedList<Client> devices) {
+    public void setDevices(List<Client> devices) {
         this.devices = devices;
     }
 
-    public LinkedList<Client> getUsers() {
+    public List<Client> getUsers() {
         return users;
     }
 
-    public void setUsers(LinkedList<Client> users) {
+    public void setUsers(List<Client> users) {
         this.users = users;
     }
 
-    public LinkedList<Application> getSubscriptions() {
+    public List<Application> getSubscriptions() {
         return subscriptions;
     }
 
-    public void setSubscriptions(LinkedList<Application> subscriptions) {
+    public void setSubscriptions(List<Application> subscriptions) {
         this.subscriptions = subscriptions;
     }
 }

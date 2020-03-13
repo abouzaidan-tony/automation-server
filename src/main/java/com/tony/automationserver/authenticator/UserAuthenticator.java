@@ -1,5 +1,7 @@
 package com.tony.automationserver.authenticator;
 
+import java.sql.SQLException;
+
 import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Application;
@@ -13,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 public class UserAuthenticator implements Authenticator<Client> {
 
-    private static Logger logger = LogManager.getLogger(UserAuthenticator.class.getName());
+    private static Logger logger = LogManager.getLogger(UserAuthenticator.class);
 
     @Override
     public Client Authenticate(byte[] data) {
@@ -36,6 +38,7 @@ public class UserAuthenticator implements Authenticator<Client> {
 
         logger.debug(() -> "Authentication : " + account);
 
+        account.getSubscriptions();
         boolean found = false;
         for (Application var : account.getSubscriptions()) {
             if (var.token.equals(appToken)) {
@@ -69,8 +72,12 @@ public class UserAuthenticator implements Authenticator<Client> {
 
         d.setConnected(true);
 
-        EntityManager.GetInstance().Update(d);
-        EntityManager.GetInstance().flush();
+        try {
+            EntityManager.GetInstance().persist(d);
+        } catch (SQLException e) {
+            logger.error(e);
+            return null;
+        }
 
         return d;
     }

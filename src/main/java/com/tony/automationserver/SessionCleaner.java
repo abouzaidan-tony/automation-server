@@ -1,7 +1,8 @@
 package com.tony.automationserver;
 
-import java.io.IOException;
 import java.util.LinkedList;
+
+import com.tony.automationserver.exception.AutomationServerException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +27,7 @@ public class SessionCleaner extends Thread {
                     try {
                         if (!session.isSkip())
                             session.sendMessage(null);
-                    } catch (IOException ex) {
+                    } catch (AutomationServerException ex) {
                     }
 
                     if (!session.isRunning())

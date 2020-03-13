@@ -1,13 +1,11 @@
 package com.tony.automationserver.statemachine;
 
-import java.io.IOException;
-
 import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.command.MessageAnalyzer;
-import com.tony.automationserver.exception.DeviceNotConnectedException;
-import com.tony.automationserver.exception.DeviceNotFoundException;
+import com.tony.automationserver.exception.AutomationServerException;
+import com.tony.automationserver.messages.BufferMessageBuilder;
+import com.tony.automationserver.messages.ErrorMessageBuilder;
 import com.tony.automationserver.messages.Message;
-import com.tony.automationserver.messages.MessageBuilder;
 import com.tony.automationserver.messages.Message.MessageType;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CommandState extends State {
 
-    private static Logger logger = LogManager.getLogger(CommandState.class.getName());
+    private static Logger log = LogManager.getLogger(CommandState.class.getName());
     private MessageAnalyzer analyzer;
 
     public CommandState(ClientSession session, MessageAnalyzer analyzer) {
@@ -28,13 +26,10 @@ public class CommandState extends State {
         Message message = null;
         State nextState = this;
 
-        logger.debug(() -> "Processing command from " + session.getClient());
+        log.debug("Processing command from " + session.getClient());
 
         try {
-            message = new Message(data, session.getClient());
-
-            if (!message.KeepAlive())
-                nextState = new FinalState(session);
+            message = new BufferMessageBuilder().setBuffer(data).setOrigin(session.getClient()).build();
 
             if (message.getMessageType() == MessageType.ECHO) {
                 message.setOrigin(session.getClient().getKey());
@@ -42,28 +37,19 @@ public class CommandState extends State {
             } else {
                 analyzer.Process(message);
             }
+            message = null;
 
-        } catch (IllegalArgumentException ex) {
-            logger.warn(() -> "Wrong message structure " + session.getClient());
-            message = new MessageBuilder().setOrigin(session.getClient().getKey()).setMessage("Wrong Message Format")
-                    .setMessageType(MessageType.ERROR).build();
-
-        } catch (DeviceNotConnectedException | DeviceNotFoundException ex) {
-            final String str = session.getClient() + " -> " + message.getOrigin();
-            logger.info(() -> ex.getMessage() + " " + str);
-            message = new MessageBuilder().setOrigin(message.getOrigin()).setMessage(ex.getMessage())
-                    .setMessageType(MessageType.ERROR).build();
-        } catch (IOException ex) {
-            logger.error(session.getClient() + " " + ex.getMessage(), ex);
-        }
-
-        try {
-            if (message != null)
+        }catch (AutomationServerException ex) {
+            try{
+                log.info(session.getClient() + " -> " + message.getOrigin(), ex);
+                message = new ErrorMessageBuilder().setException(ex).setOrigin(session.getClient()).build();
                 session.sendMessage(message.toByteArray());
-        } catch (IOException ex) {
-            logger.error(session.getClient() + " " + ex.getMessage(), ex);
+                
+            }catch(AutomationServerException ex2){
+                log.error(ex2);
+                nextState = new FinalState(session);
+            }
         }
-
         return nextState;
     }
 

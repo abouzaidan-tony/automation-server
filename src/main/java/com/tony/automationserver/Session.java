@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import com.tony.automationserver.exception.AutomationServerException;
+import com.tony.automationserver.exception.IOServerException;
 import com.tony.automationserver.streams.OnMessageReadyListener;
 import com.tony.automationserver.streams.StreamManager;
 
@@ -81,12 +83,12 @@ public abstract class Session implements OnMessageReadyListener {
         return running;
     }
 
-    public synchronized void sendMessage(byte[] msg) throws IOException {
+    public synchronized void sendMessage(byte[] msg) throws AutomationServerException {
         try {
             out.write(manager.formatStream(msg));
         } catch (IOException e) {
             close();
-            throw e;
+            throw new IOServerException(e);
         }
     }
 

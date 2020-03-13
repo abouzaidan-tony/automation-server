@@ -1,6 +1,7 @@
 package com.tony.automationserver;
 
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
@@ -61,8 +62,7 @@ public class ClientSession extends Session {
             return;
         logger.info(() -> "Removing client " + client);
         client.setConnected(false);
-        EntityManager.GetInstance().Update(client);
-        EntityManager.GetInstance().flush();
+
         try {
             lock.acquire();
         } catch (InterruptedException e) {
@@ -71,6 +71,12 @@ public class ClientSession extends Session {
             userSessions.remove(client.getId());
         else
             deviceSessions.remove(client.getId());
+
+        try {
+            EntityManager.GetInstance().persist(client);
+        } catch (SQLException e) {
+            logger.error("Cannot update client status", e);
+        }
         lock.release();
         client = null;
     }

@@ -128,6 +128,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                         session.getDataReceivedListener().OnDataReceived(buffer, length);
 
                     } catch (Exception ex) {
+                        ex.printStackTrace();
                         session.close();
                         iterator.remove();
                     }

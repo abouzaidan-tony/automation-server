@@ -3,7 +3,7 @@ package com.tony.automationserver.client;
 import com.tony.sqlhelper.annotation.Property;
 import com.tony.sqlhelper.annotation.Table;
 
-@Table(name = "user")
+@Table("user")
 public class User extends Client {
 
     @Property(name = "user_key")

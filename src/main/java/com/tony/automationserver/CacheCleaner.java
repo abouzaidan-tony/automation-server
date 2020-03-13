@@ -1,8 +1,6 @@
 package com.tony.automationserver;
 
-import java.util.Map;
-
-import com.tony.sqlhelper.Repository;
+import com.tony.sqlhelper.EntityManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +13,7 @@ public class CacheCleaner extends Thread {
     public void run() {
         while (true) {
             try {
-                for (Map<Object, Object> var : Repository.getCaches().values())
-                    var.clear();
+                EntityManager.GetInstance().invalidateCache();
                 Thread.sleep(120000);
             } catch (Exception ex) {
                 logger.error(ex.getMessage(), ex);

@@ -1,5 +1,7 @@
 package com.tony.automationserver.authenticator;
 
+import java.sql.SQLException;
+
 import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.client.Account;
 import com.tony.automationserver.client.Application;
@@ -13,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 public class DeviceAuthenticator implements Authenticator<Client> {
 
-    private static Logger logger = LogManager.getLogger(DeviceAuthenticator.class.getName());
+    private static Logger logger = LogManager.getLogger(DeviceAuthenticator.class);
 
     @Override
     public Client Authenticate(byte[] data) {
@@ -59,10 +61,10 @@ public class DeviceAuthenticator implements Authenticator<Client> {
 
         if (d == null)
             return null;
-            
-        if(d.isConnected() == true) {
+
+        if (d.isConnected() == true) {
             ClientSession s = ClientSession.getDevicesSessions().get(d.getId());
-            if(s != null){
+            if (s != null) {
                 logger.info(() -> "Removing old session " + s.getSocket().getInetAddress());
                 s.close();
             }
@@ -72,9 +74,13 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         logger.debug(() -> "Authentication : " + deviceString);
 
         d.setConnected(true);
-        
-        EntityManager.GetInstance().Update(d);
-        EntityManager.GetInstance().flush();
+
+        try {
+            EntityManager.GetInstance().persist(d);
+        } catch (SQLException e) {
+           logger.error(e);
+           return null;
+        }
         
         return d;
     }

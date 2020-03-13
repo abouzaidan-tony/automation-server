@@ -5,7 +5,7 @@ import com.tony.sqlhelper.annotation.PrimaryKey;
 import com.tony.sqlhelper.annotation.Property;
 import com.tony.sqlhelper.annotation.Table;
 
-@Table(name = "application")
+@Table("application")
 public class Application {
 
     @PrimaryKey

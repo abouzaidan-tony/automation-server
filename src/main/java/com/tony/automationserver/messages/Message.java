@@ -1,112 +1,58 @@
 package com.tony.automationserver.messages;
 
-import java.util.Arrays;
-
 import com.tony.automationserver.client.Client;
 
-public class Message {
+public abstract class Message {
 
     public enum MessageType {
-        DATA, ERROR, ECHO, BROADCAST
+        DATA(1), ERROR(2), ECHO(3), BROADCAST(4), EMPTY(5);
+
+        private final byte value;
+
+        private MessageType(int value){
+            this.value = (byte) value;
+        }
+
+        public byte byteVal(){
+            return value;
+        }
+
+        public static MessageType fromByte(byte value) {
+            for(MessageType e : MessageType.class.getEnumConstants()){
+                if(e.byteVal() == value){
+                    return e;
+                }
+            } 
+            throw new IllegalArgumentException();           
+        }
+
     }
 
-    private MessageType mType;
-    private byte type;
-    private byte keepAlive;
+    public final static String originServer = "00000";
+
+    private final MessageType mType;
+    protected byte[] buffer;
+    private final Client client;
     private String origin;
-    private byte[] data;
-    private Client client;
 
-    protected Message() {
-    }
-
-    Message(MessageType mType, String origin, byte[] data, byte keepAlive) {
-        iniType(mType);
+    Message(MessageType mType, Client client) {
         this.mType = mType;
-        this.origin = origin;
-        this.data = data;
-        this.keepAlive = keepAlive;
-    }
-
-    public Message(byte[] buffer, Client client) {
-        if (buffer.length < 7)
-            throw new IllegalArgumentException();
-        this.type = buffer[0];
-        this.keepAlive = buffer[1];
-        this.origin = new String(buffer, 2, 5);
-        iniMType(type);
-        data = Arrays.copyOfRange(buffer, 7, buffer.length);
         this.client = client;
+        origin = originServer;
     }
 
-    public void setClient(Client client) {
+    Message(byte[] buffer, Client client) {
+        this.mType = MessageType.fromByte(buffer[0]);
+        this.buffer = buffer;
         this.client = client;
+        this.origin = resoleOrigin();
     }
 
-    private void iniType(MessageType mType) {
-        switch (mType) {
-            case DATA:
-                this.type = 1;
-                break;
-            case ECHO:
-                this.type = 2;
-                break;
-            case BROADCAST:
-                this.type = 3;
-                break;
-            default:
-                this.type = 4;
-                break;
-        }
-    }
+    protected abstract void init();
 
-    private void iniMType(byte type) {
-        switch (type) {
-            case 1:
-                this.mType = MessageType.DATA;
-                break;
-            case 2:
-                this.mType = MessageType.ECHO;
-                break;
-            case 3:
-                this.mType = MessageType.BROADCAST;
-                break;
-            default:
-                this.mType = MessageType.ERROR;
-                break;
-        }
-    }
+    protected abstract String resoleOrigin();
 
-    public Client getClient() {
-        return client;
-    }
-
-    public byte getType() {
-        return type;
-    }
-
-    public String getOrigin() {
-        return origin;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
-
-    public byte[] toByteArray() {
-        int totalLength = 7 + data.length;
-        byte[] buffer = new byte[totalLength];
-        buffer[0] = type;
-        buffer[1] = keepAlive;
-        byte[] idBuffer = origin.getBytes();
-        for (int i = 0; i < 5; i++)
-            buffer[i + 2] = i < idBuffer.length ? idBuffer[i] : 0;
-        for (int i = 0; i < data.length; i++)
-            buffer[i + 7] = data[i];
+    public byte[] toByteArray(){
         return buffer;
     }
 
@@ -114,7 +60,16 @@ public class Message {
         return mType;
     }
 
-    public boolean KeepAlive() {
-        return keepAlive == 1;
+    public Client getClient() {
+        return client;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+        init();
     }
 }
