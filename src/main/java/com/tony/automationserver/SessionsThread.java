@@ -34,7 +34,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
         logger.debug("Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
         logger.debug("new size is " + (queue.size() + sessions.size()));
-        if (wasEmpty && isNewThread)
+        if (wasEmpty && !isNewThread)
             halter.release();
         isNewThread = false;
     }
