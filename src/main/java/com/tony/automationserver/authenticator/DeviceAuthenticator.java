@@ -19,9 +19,9 @@ public class DeviceAuthenticator implements Authenticator<Client> {
 
     @Override
     public Client Authenticate(byte[] data) {
-        logger.info(() -> "Authenticating Device");
+        logger.info("Authenticating Device");
         if (data.length != 36) {
-            logger.info(() -> "Invalid authentication data");
+            logger.info("Invalid authentication data");
             return null;
         }
 
@@ -33,11 +33,11 @@ public class DeviceAuthenticator implements Authenticator<Client> {
                 .findOneBy(new FilterTuple("token", userToken));
 
         if (account == null) {
-            logger.info(() -> "Authentication failed : account not found");
+            logger.info("Authentication failed : account not found");
             return null;
         }
 
-        logger.info(() -> "Authentication : " + account);
+        logger.info("Authentication : " + account);
 
         boolean found = false;
         for (Application var : account.getSubscriptions()) {
@@ -65,13 +65,13 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         if (d.isConnected() == true) {
             ClientSession s = ClientSession.getDevicesSessions().get(d.getId());
             if (s != null) {
-                logger.info(() -> "Removing old session " + s.getSocket().getInetAddress());
+                logger.info("Removing old session " + s.getSocket().getInetAddress());
                 s.close();
             }
         }
 
         final String deviceString = d.toString();
-        logger.debug(() -> "Authentication : " + deviceString);
+        logger.debug("Authentication : " + deviceString);
 
         d.setConnected(true);
 

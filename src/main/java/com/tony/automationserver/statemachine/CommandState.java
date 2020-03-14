@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CommandState extends State {
 
-    private static Logger log = LogManager.getLogger(CommandState.class.getName());
+    private static Logger log = LogManager.getLogger(CommandState.class);
     private MessageAnalyzer analyzer;
 
     public CommandState(ClientSession session, MessageAnalyzer analyzer) {

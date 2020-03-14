@@ -18,7 +18,7 @@ import java.io.OutputStream;
 
 public abstract class Session implements OnMessageReadyListener {
 
-    private static Logger logger = LogManager.getLogger(Session.class.getName());
+    private static Logger logger = LogManager.getLogger(Session.class);
     public static Semaphore lock = new Semaphore(1);
     public static List<Session> sessions = new LinkedList<>();
 
@@ -73,7 +73,7 @@ public abstract class Session implements OnMessageReadyListener {
             ex.printStackTrace();
         }
 
-        logger.debug(() -> "Session closed");
+        logger.debug("Session closed");
         OnSessionClosed();
     }
 

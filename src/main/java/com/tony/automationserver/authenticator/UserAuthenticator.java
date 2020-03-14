@@ -19,9 +19,9 @@ public class UserAuthenticator implements Authenticator<Client> {
 
     @Override
     public Client Authenticate(byte[] data) {
-        logger.debug(() -> "Authenticating Device");
+        logger.debug("Authenticating Device");
         if (data.length != 36) {
-            logger.debug(() -> "Invalid authentication data");
+            logger.debug("Invalid authentication data");
             return null;
         }
         String userToken = new String(data, 1, 15);
@@ -32,11 +32,11 @@ public class UserAuthenticator implements Authenticator<Client> {
                 .findOneBy(new FilterTuple("token", userToken));
 
         if (account == null) {
-            logger.debug(() -> "Authentication failed : account not found");
+            logger.debug("Authentication failed : account not found");
             return null;
         }
 
-        logger.debug(() -> "Authentication : " + account);
+        logger.debug("Authentication : " + account);
 
         account.getSubscriptions();
         boolean found = false;
@@ -68,7 +68,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         }
 
         final String deviceString = d.toString();
-        logger.debug(() -> "Authentication : " + deviceString);
+        logger.debug("Authentication : " + deviceString);
 
         d.setConnected(true);
 

@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SessionCleaner extends Thread {
 
-    private static Logger logger = LogManager.getLogger(SessionCleaner.class.getName());
+    private static Logger logger = LogManager.getLogger(SessionCleaner.class);
 
     private int sleepTime;
 
@@ -37,7 +37,7 @@ public class SessionCleaner extends Thread {
                 if (offlineSessions.size() == 0)
                     sleepTime += 100;
                 else {
-                    logger.debug(() -> "Removing " + offlineSessions.size() + " sessions");
+                    logger.debug("Removing " + offlineSessions.size() + " sessions");
                     sleepTime -= offlineSessions.size() * 100;
                 }
 

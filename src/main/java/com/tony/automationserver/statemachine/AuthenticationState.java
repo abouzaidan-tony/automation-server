@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 public class AuthenticationState extends State {
 
-    private static Logger logger = LogManager.getLogger(AuthenticationState.class.getName());
+    private static Logger logger = LogManager.getLogger(AuthenticationState.class);
     private static Semaphore authLock = new Semaphore(1);
 
     public AuthenticationState(ClientSession session) {
@@ -53,7 +53,7 @@ public class AuthenticationState extends State {
     private State handleAuthSuccess(Client c) {
         session.writeByte((byte) 0x01);
 
-        logger.info(() -> "Authentication success for " + c);
+        logger.info("Authentication success for " + c);
 
         session.setClient(c);
 
@@ -83,7 +83,7 @@ public class AuthenticationState extends State {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        logger.warn(() -> "Authentication Attempt Failed");
+        logger.warn("Authentication Attempt Failed");
         authLock.release();
         return new FinalState(session);
     }

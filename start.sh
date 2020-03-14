@@ -1,3 +1,4 @@
 #!/bin/bash
-
-java -jar target/Automation-Server-1.0-SNAPSHOT.jar 
+MAINCLASS=com.tony.automationserver.Server
+CPATH=target/*:target/dependency/*:src/main/resources
+java -cp $CPATH $MAINCLASS

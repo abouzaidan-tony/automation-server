@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
-    private static Logger log = LogManager.getLogger(AbstractMessageAnalyzer.class.getName());
+    private static Logger log = LogManager.getLogger(AbstractMessageAnalyzer.class);
 
     public abstract List<Client> getCandidates(Client client);
 

@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SessionsThread extends Thread implements Comparable<SessionsThread> {
 
-    private static Logger logger = LogManager.getLogger(SessionsThread.class.getName());
+    private static Logger logger = LogManager.getLogger(SessionsThread.class);
 
     private LinkedList<Session> sessions;
     private Iterator<Session> iterator;
@@ -29,9 +29,9 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     public synchronized void registerSession(Session s) {
         boolean wasEmpty = queue.size() == 0;
-        logger.debug(() -> "Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
+        logger.debug("Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
-        logger.debug(() -> "new size is " + (queue.size() + sessions.size()));
+        logger.debug("new size is " + (queue.size() + sessions.size()));
         if (wasEmpty)
             halter.release();
     }
@@ -42,7 +42,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     @Override
     public void run() {
-        logger.info(() -> "Sessions Thread Started");
+        logger.info("Sessions Thread Started");
 
         int length;
         byte[] buffer = new byte[256];
@@ -72,9 +72,9 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                 }
 
                 if (isEmpty) {
-                    logger.debug(() -> "Aquiring Lock");
+                    logger.debug("Aquiring Lock");
                     halter.acquire();
-                    logger.debug(() -> "Resuming");
+                    logger.debug("Resuming");
                 }
 
                 iterator = sessions.iterator();
@@ -94,7 +94,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                     if (!session.isRunning()) {
                         synchronized (this) {
                             iterator.remove();
-                            logger.debug(() -> getName() + " removing session, new size " + queue.size());
+                            logger.debug(getName() + " removing session, new size " + queue.size());
                         }
                         continue;
                     }
@@ -108,7 +108,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                         if (!session.isRunning()) {
                             synchronized (this) {
                                 iterator.remove();
-                                logger.debug(() -> getName() + " removing session, new size " + queue.size());
+                                logger.debug(getName() + " removing session, new size " + queue.size());
                             }
                             continue;
                         }
