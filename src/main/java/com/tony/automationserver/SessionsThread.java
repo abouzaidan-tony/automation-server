@@ -20,11 +20,13 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     private Queue<Session> queue;
 
     private Semaphore halter;
+    private boolean isNewThread;
 
     public SessionsThread() {
         sessions = new LinkedList<>();
         queue = new LinkedList<>();
-        halter = new Semaphore(1);
+        halter = new Semaphore(0);
+        isNewThread = true;
     }
 
     public synchronized void registerSession(Session s) {
@@ -32,8 +34,9 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
         logger.debug("Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
         logger.debug("new size is " + (queue.size() + sessions.size()));
-        if (wasEmpty)
+        if (wasEmpty && isNewThread)
             halter.release();
+        isNewThread = false;
     }
 
     public synchronized int getSize() {
@@ -72,7 +75,7 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                 }
 
                 if (isEmpty) {
-                    logger.debug("Aquiring Lock");
+                    logger.debug("Sessions Emtpy, Halting");
                     halter.acquire();
                     logger.debug("Resuming");
                 }
