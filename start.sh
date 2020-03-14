@@ -1,4 +1,12 @@
 #!/bin/bash
-MAINCLASS=com.tony.automationserver.Server
-CPATH=target/*:target/dependency/*:config
-java -cp $CPATH $MAINCLASS
+
+. ./setenv.sh
+
+pid=$(./check.sh)
+if [ "$?" == "0" ]
+then
+    echo "Starting $NAME"
+    java -Dname=$NAME -cp $CPATH $MAINCLASS &
+else
+    echo "Another instance of $NAME is running"
+fi
