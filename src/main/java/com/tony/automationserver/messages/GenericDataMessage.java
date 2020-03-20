@@ -26,7 +26,7 @@ public class GenericDataMessage extends Message {
 
     @Override
     protected void init() {
-        int totalLength = 7 + data.length;
+        int totalLength = 6 + data.length;
         byte[] buffer = new byte[totalLength];
         buffer[0] = getMessageType().byteVal();
         byte[] idBuffer = getOrigin().getBytes();
