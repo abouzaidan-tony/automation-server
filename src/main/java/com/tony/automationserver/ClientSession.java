@@ -54,6 +54,7 @@ public class ClientSession extends Session {
 
     public void setClient(Client client) {
         this.client = client;
+        authenticated = true;
     }
 
     @Override
@@ -62,6 +63,7 @@ public class ClientSession extends Session {
             return;
         logger.info("Removing client " + client);
         client.setConnected(false);
+        authenticated = false;
 
         try {
             lock.acquire();

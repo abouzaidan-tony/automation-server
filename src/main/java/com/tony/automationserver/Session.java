@@ -28,13 +28,15 @@ public abstract class Session implements OnMessageReadyListener {
     private OnDataReceivedListener dataReceivedListener;
     private boolean running;
     private StreamManager manager;
-    private boolean skip;
+    private int skip;
+    protected boolean authenticated;
 
     public Session(Socket socket, StreamManager manager) {
         running = true;
-        skip = true;
+        skip = 0;
         this.socket = socket;
         this.manager = manager;
+        authenticated = false;
         this.manager.setOnMessageReadyListener(this);
         setOnDataReceivedListener(manager);
         try {
@@ -110,8 +112,11 @@ public abstract class Session implements OnMessageReadyListener {
     }
 
     public boolean isSkip() {
-        boolean skip = this.skip;
-        this.skip = false;
+        boolean skip = this.skip++ <= 3;
         return skip;
+    }
+
+    public boolean isAuthenticated(){
+        return authenticated;
     }
 }

@@ -24,7 +24,12 @@ public class SessionCleaner extends PausableThread {
 
         for (Session session : Session.sessions) {
             try {
-                if (!session.isSkip())
+                if(session.isSkip())
+                    continue;
+
+                if(!session.isAuthenticated())
+                    session.close();
+                else if (session.isAuthenticated())
                     session.sendMessage(null);
             } catch (AutomationServerException ex) {
             }
