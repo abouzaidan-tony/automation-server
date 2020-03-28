@@ -27,15 +27,15 @@ public class Server {
         SQLHelper.GetInstance().ExecuteNonQuery("UPDATE device SET connected = 0", null);
         logger.info("End updating database");
 
-        Thread cc = new CacheCleaner();
-        Thread sc = new SessionCleaner();
+        PausableThread cc = new CacheCleaner();
+        PausableThread sc = new SessionCleaner();
 
         cc.start();
         sc.start();
 
         ServerSocket listener = new ServerSocket(9909);
 
-        SessionPool pool = SessionPool.getInstance();
+        SessionPool pool = SessionPool.getInstance(new PausableThread[] {cc, sc});
 
         try {
             while (true) {

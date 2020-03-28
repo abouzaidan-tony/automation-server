@@ -21,12 +21,14 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
     private Semaphore halter;
     private boolean isNewThread;
+    private PausableThread [] pausableThreads;
 
-    public SessionsThread() {
+    public SessionsThread(PausableThread [] pausableThreads) {
         sessions = new LinkedList<>();
         queue = new LinkedList<>();
         halter = new Semaphore(0);
         isNewThread = true;
+        this.pausableThreads = pausableThreads;
     }
 
     public synchronized void registerSession(Session s) {
@@ -76,8 +78,10 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
 
                 if (isEmpty) {
                     logger.debug("Sessions Emtpy, Halting");
+                    pauseAllThreads();
                     halter.acquire();
                     logger.debug("Resuming");
+                    resumeAllThreads();
                 }
 
                 iterator = sessions.iterator();
@@ -162,5 +166,17 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     @Override
     public int compareTo(SessionsThread o) {
         return Integer.compare(this.getSize(), o.getSize());
+    }
+
+    private void pauseAllThreads(){
+        for(int i=0; i<pausableThreads.length; i++){
+            pausableThreads[i].halt();
+        }
+    }
+
+    private void resumeAllThreads() {
+        for (int i = 0; i < pausableThreads.length; i++) {
+            pausableThreads[i].unhalt();
+        }
     }
 }

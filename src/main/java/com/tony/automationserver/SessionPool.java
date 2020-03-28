@@ -13,9 +13,11 @@ public class SessionPool {
     private static SessionPool pool;
 
     private ArrayList<SessionsThread> queue;
+    private PausableThread [] pausableThreads;
 
-    private SessionPool() {
+    private SessionPool(PausableThread [] pausableThreads){
         queue = new ArrayList<>();
+        this.pausableThreads = pausableThreads;
         init();
     }
 
@@ -27,16 +29,16 @@ public class SessionPool {
         // }
     }
 
-    public static synchronized SessionPool getInstance() {
+    public static synchronized SessionPool getInstance(PausableThread[] pausableThreads) {
         if (pool == null)
-            pool = new SessionPool();
+            pool = new SessionPool(pausableThreads);
         return pool;
     }
 
     public synchronized void addSession(Session session) {
         logger.debug("Thread count " + queue.size());
         if (queue.size() == 0) {
-            SessionsThread thread = new SessionsThread();
+            SessionsThread thread = new SessionsThread(pausableThreads);
             queue.add(thread);
             thread.registerSession(session);
             thread.start();
@@ -50,7 +52,7 @@ public class SessionPool {
             if (thread.getSize() == 0 || queue.size() >= MAX_THREADS) {
                 thread.registerSession(session);
             } else {
-                thread = new SessionsThread();
+                thread = new SessionsThread(pausableThreads);
                 queue.add(thread);
                 thread.registerSession(session);
                 thread.start();
