@@ -1,4 +1,4 @@
-
+#!/bin/bash
 . ./setenv.sh
 
 pid=$(./check.sh)
