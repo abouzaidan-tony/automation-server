@@ -3,7 +3,7 @@
 . ./setenv.sh
 
 pid=$(./check.sh)
-if [ "$?" == "0" ]
+if [ "$pid" == "0" ]
 then
     echo "Starting $NAME"
     java -Dname=$NAME -cp $CPATH $MAINCLASS > /dev/null 2>&1 &
