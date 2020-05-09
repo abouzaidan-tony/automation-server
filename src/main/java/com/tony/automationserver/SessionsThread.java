@@ -6,12 +6,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class SessionsThread extends Thread implements Comparable<SessionsThread> {
+public class SessionsThread extends PausableThread implements Comparable<SessionsThread> {
 
     private static Logger logger = LogManager.getLogger(SessionsThread.class);
 
@@ -19,26 +18,24 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     private Iterator<Session> iterator;
     private Queue<Session> queue;
 
-    private Semaphore halter;
-    private boolean isNewThread;
-    private PausableThread [] pausableThreads;
 
-    public SessionsThread(PausableThread [] pausableThreads) {
+    private int length;
+    private byte[] buffer = new byte[256];
+    private int sleepTime = 2;
+    private int maxSleepTime = 3000;
+    private int noDataCount = 0;
+
+    public SessionsThread(SessionsThreadEvents sessionsThreadListener) {
         sessions = new LinkedList<>();
         queue = new LinkedList<>();
-        halter = new Semaphore(0);
-        isNewThread = true;
-        this.pausableThreads = pausableThreads;
+        setSessionsThreadListener(sessionsThreadListener);
     }
 
     public synchronized void registerSession(Session s) {
-        boolean wasEmpty = queue.size() == 0;
         logger.debug("Adding session to " + this.getName() + " size is " + (queue.size() + sessions.size()));
         queue.add(s);
-        logger.debug("new size is " + (queue.size() + sessions.size()));
-        if (wasEmpty && !isNewThread)
-            halter.release();
-        isNewThread = false;
+        logger.debug("New size is " + (queue.size() + sessions.size()));
+        this.unhalt();
     }
 
     public synchronized int getSize() {
@@ -46,57 +43,66 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
     }
 
     @Override
-    public void run() {
+    public void preProcess() {
         logger.info("Sessions Thread Started");
-
-        int length;
-        byte[] buffer = new byte[256];
-        int sleepTime = 2;
-        int maxSleepTime = 3000;
-        int noDataCount = 0;
+    }
+    
+    @Override
+    public void process() {
 
         BufferedInputStream bf = null;
 
-        while (true) {
-            try {
+        try {
 
-                Thread.sleep(sleepTime);
+            Thread.sleep(sleepTime);
 
-                noDataCount = 0;
+            noDataCount = 0;
 
-                Session session = null;
+            Session session = null;
 
-                boolean isEmpty = true;
+            boolean isEmpty = true;
+
+            synchronized (this) {
+                for (Session s : queue) {
+                    sessions.add(s);
+                }
+                queue.clear();
+                isEmpty = sessions.size() == 0;
+            }
+
+            if (isEmpty) {
+                logger.debug("Sessions Emtpy, Halting");
+                selfHalt();
+                logger.debug("Resumed");
+            }
+
+            iterator = sessions.iterator();
+
+            do {
 
                 synchronized (this) {
-                    for (Session s : queue) {
-                        sessions.add(s);
-                    }
-                    queue.clear();
-                    isEmpty = sessions.size() == 0;
+                    if (iterator.hasNext())
+                        session = iterator.next();
+                    else
+                        session = null;
                 }
 
-                if (isEmpty) {
-                    logger.debug("Sessions Emtpy, Halting");
-                    pauseAllThreads();
-                    halter.acquire();
-                    logger.debug("Resuming");
-                    resumeAllThreads();
-                }
+                if (session == null)
+                    break;
 
-                iterator = sessions.iterator();
-
-                do {
-
+                if (!session.isRunning()) {
                     synchronized (this) {
-                        if (iterator.hasNext())
-                            session = iterator.next();
-                        else
-                            session = null;
+                        iterator.remove();
+                        logger.debug(getName() + " removing session, new size " + queue.size());
                     }
+                    continue;
+                }
 
-                    if (session == null)
-                        break;
+                InputStream input = session.getInputStream();
+
+                bf = new BufferedInputStream(input);
+
+                try {
 
                     if (!session.isRunning()) {
                         synchronized (this) {
@@ -106,77 +112,49 @@ public class SessionsThread extends Thread implements Comparable<SessionsThread>
                         continue;
                     }
 
-                    InputStream input = session.getInputStream();
-
-                    bf = new BufferedInputStream(input);
-
-                    try {
-
-                        if (!session.isRunning()) {
-                            synchronized (this) {
-                                iterator.remove();
-                                logger.debug(getName() + " removing session, new size " + queue.size());
-                            }
-                            continue;
-                        }
-
-                        if (bf.available() == 0) {
-                            noDataCount++;
-                            continue;
-                        }
-
-                        length = input.read(buffer, 0, buffer.length);
-
-                        if (length < 0)
-                            throw new IOException();
-
-                        if (session.getDataReceivedListener() != null)
-                            ;
-                        session.getDataReceivedListener().OnDataReceived(buffer, length);
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        session.close();
-                        iterator.remove();
+                    if (bf.available() == 0) {
+                        noDataCount++;
+                        continue;
                     }
 
-                } while (true);
+                    length = input.read(buffer, 0, buffer.length);
 
-            } catch (Exception ex) {
-                logger.error(ex.getMessage());
-            }
+                    if (length < 0)
+                        throw new IOException();
 
-            int existingLength = 0;
-            synchronized (this) {
-                existingLength = sessions.size();
-            }
+                    if (session.getDataReceivedListener() != null)
+                        session.getDataReceivedListener().OnDataReceived(buffer, length);
 
-            if (existingLength == noDataCount)
-                sleepTime += 1;
-            else
-                sleepTime -= 500;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    session.close();
+                    iterator.remove();
+                }
 
-            if (sleepTime > maxSleepTime)
-                sleepTime = maxSleepTime;
-            else if (sleepTime < 2)
-                sleepTime = 2;
+            } while (true);
+
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
         }
+
+        int existingLength = 0;
+        synchronized (this) {
+            existingLength = sessions.size();
+        }
+
+        if (existingLength == noDataCount)
+            sleepTime += 1;
+        else
+            sleepTime -= 500;
+
+        if (sleepTime > maxSleepTime)
+            sleepTime = maxSleepTime;
+        else if (sleepTime < 2)
+            sleepTime = 2;
     }
 
     @Override
     public int compareTo(SessionsThread o) {
         return Integer.compare(this.getSize(), o.getSize());
-    }
-
-    private void pauseAllThreads(){
-        for(int i=0; i<pausableThreads.length; i++){
-            pausableThreads[i].halt();
-        }
-    }
-
-    private void resumeAllThreads() {
-        for (int i = 0; i < pausableThreads.length; i++) {
-            pausableThreads[i].unhalt();
-        }
     }
 }

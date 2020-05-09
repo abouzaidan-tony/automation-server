@@ -13,6 +13,6 @@ public class CacheCleaner extends PausableThread {
     public void process() throws InterruptedException{
         logger.debug("Cleaning cache");
         EntityManager.GetInstance().invalidateCache();
-        Thread.sleep(120000);
+        Thread.sleep(1000);
     }
 }

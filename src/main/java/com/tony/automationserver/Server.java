@@ -19,6 +19,7 @@ public class Server {
             logger.error(ex.getMessage(), ex);
         }
         logger.warn("Closing App");
+        System.exit(0);
     }
 
     public static void run(String[] args) throws Exception {
@@ -29,9 +30,6 @@ public class Server {
 
         PausableThread cc = new CacheCleaner();
         PausableThread sc = new SessionCleaner();
-
-        cc.start();
-        sc.start();
 
         ServerSocket listener = new ServerSocket(9909);
 
