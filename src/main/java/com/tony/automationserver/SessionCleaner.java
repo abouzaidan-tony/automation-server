@@ -41,7 +41,7 @@ public class SessionCleaner extends PausableThread {
         if (offlineSessions.size() == 0)
             sleepTime += 100;
         else {
-            log.debug("Removing " + offlineSessions.size() + " sessions");
+            log.debug("Removing [" + offlineSessions.size() + "] sessions");
             sleepTime -= offlineSessions.size() * 100;
         }
 

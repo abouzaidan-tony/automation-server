@@ -98,7 +98,7 @@ public abstract class PausableThread extends Thread {
         }
         if(!isPaused())
             return;
-        log.debug("Resuming " + this.getClass().getSimpleName());
+        log.debug("Resuming [" + this.getClass().getSimpleName() + "]");
         isHalted = false;
         halter.release();
     }
