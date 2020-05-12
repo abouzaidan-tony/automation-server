@@ -11,7 +11,7 @@ public class CacheCleaner extends PausableThread {
 
     @Override
     public void process() throws InterruptedException{
-        logger.debug("Cleaning cache");
+        logger.trace("Cleaning cache");
         EntityManager.GetInstance().invalidateCache();
         Thread.sleep(130000);
     }
