@@ -68,7 +68,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         }
 
         final String deviceString = d.toString();
-        logger.debug("Authentication successfull : " + deviceString);
+        logger.debug("Authentication successfull from " + deviceString);
 
         d.setConnected(true);
 
