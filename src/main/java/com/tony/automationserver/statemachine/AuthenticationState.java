@@ -81,7 +81,7 @@ public class AuthenticationState extends State {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Error", e);
         }
         logger.warn("Authentication Attempt Failed");
         authLock.release();

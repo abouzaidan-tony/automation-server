@@ -82,4 +82,9 @@ public class ClientSession extends Session {
         lock.release();
         client = null;
     }
+
+    @Override
+    public String getSessionName() {
+        return client.getKey();
+    }
 }

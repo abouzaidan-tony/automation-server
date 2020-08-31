@@ -30,6 +30,7 @@ public abstract class Session implements OnMessageReadyListener {
     private StreamManager manager;
     private int skip;
     protected boolean authenticated;
+    protected String name;
 
     public Session(Socket socket, StreamManager manager) {
         running = true;
@@ -72,7 +73,7 @@ public abstract class Session implements OnMessageReadyListener {
         try {
             socket.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Error", ex);
         }
 
         logger.debug("Session closed");
@@ -119,4 +120,6 @@ public abstract class Session implements OnMessageReadyListener {
     public boolean isAuthenticated(){
         return authenticated;
     }
+
+    public abstract String getSessionName();
 }

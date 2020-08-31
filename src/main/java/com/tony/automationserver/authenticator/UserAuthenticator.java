@@ -36,7 +36,7 @@ public class UserAuthenticator implements Authenticator<Client> {
             return null;
         }
 
-        logger.debug("Authentication : " + account);
+        logger.debug("Authenticating : " + account + " with " + deviceCode);
 
         account.getSubscriptions();
         boolean found = false;
@@ -68,14 +68,14 @@ public class UserAuthenticator implements Authenticator<Client> {
         }
 
         final String deviceString = d.toString();
-        logger.debug("Authentication : " + deviceString);
+        logger.debug("Authentication successfull : " + deviceString);
 
         d.setConnected(true);
 
         try {
             EntityManager.GetInstance().persist(d);
         } catch (SQLException e) {
-            logger.error(e);
+            logger.error("Error", e);
             return null;
         }
 
