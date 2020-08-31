@@ -1,5 +1,5 @@
 #!/bin/bash
 MAINCLASS=com.tony.automationserver.Server
-CPATH=target/*:target/dependency/*:config
+CPATH=config:target/*:target/dependency/*
 NAME=AUTOMATION-SERVER
 
