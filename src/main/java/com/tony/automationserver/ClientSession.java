@@ -85,6 +85,8 @@ public class ClientSession extends Session {
 
     @Override
     public String getSessionName() {
+        if(client == null)
+            return "Empty Session";
         return client.getKey();
     }
 }
