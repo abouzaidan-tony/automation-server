@@ -37,7 +37,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
             return null;
         }
 
-        logger.info("Authentication : " + account);
+        logger.info("Authenticating : " + account + " with " + deviceCode);
 
         boolean found = false;
         for (Application var : account.getSubscriptions()) {
@@ -71,7 +71,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         }
 
         final String deviceString = d.toString();
-        logger.debug("Authentication : " + deviceString);
+        logger.debug("Authentication successull from " + deviceString);
 
         d.setConnected(true);
 
