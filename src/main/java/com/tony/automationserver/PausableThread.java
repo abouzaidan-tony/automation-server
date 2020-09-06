@@ -63,7 +63,7 @@ public abstract class PausableThread extends Thread {
                 process();
                 
             } catch (Exception ex) {
-                log.error(ex.getMessage(), ex);
+                log.error(ex.getMessage());
                 break;
             }
         }

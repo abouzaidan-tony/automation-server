@@ -44,7 +44,7 @@ public abstract class Session implements OnMessageReadyListener {
             out = socket.getOutputStream();
             input = socket.getInputStream();
         } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
+            logger.error(ex.getMessage());
             close();
             return;
         }
@@ -54,7 +54,7 @@ public abstract class Session implements OnMessageReadyListener {
             lock.release();
         } catch (InterruptedException ex) {
             lock.release();
-            logger.error(ex.getMessage(), ex);
+            logger.error(ex.getMessage());
         }
     }
 
@@ -73,7 +73,7 @@ public abstract class Session implements OnMessageReadyListener {
         try {
             socket.close();
         } catch (Exception ex) {
-            logger.error("Error", ex);
+            logger.error(ex.getMessage());
         }
 
         logger.debug("Session closed");
@@ -99,7 +99,7 @@ public abstract class Session implements OnMessageReadyListener {
         try {
             out.write(b);
         } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
+            logger.error(ex.getMessage());
             close();
         }
     }

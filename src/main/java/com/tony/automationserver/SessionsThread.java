@@ -126,7 +126,7 @@ public class SessionsThread extends PausableThread implements Comparable<Session
                         session.getDataReceivedListener().OnDataReceived(buffer, length);
 
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.error(ex.getMessage());
                     session.close();
                     iterator.remove();
                 }
@@ -134,7 +134,7 @@ public class SessionsThread extends PausableThread implements Comparable<Session
             } while (true);
 
         } catch (Exception ex) {
-            logger.error("Error", ex);
+            logger.error(ex.getMessage());
         }
 
         int existingLength = 0;

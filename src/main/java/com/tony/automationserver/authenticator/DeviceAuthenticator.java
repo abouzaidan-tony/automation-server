@@ -78,7 +78,7 @@ public class DeviceAuthenticator implements Authenticator<Client> {
         try {
             EntityManager.GetInstance().persist(d);
         } catch (SQLException e) {
-           logger.error(e);
+           logger.error(e.getMessage());
            return null;
         }
         
