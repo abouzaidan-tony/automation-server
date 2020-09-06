@@ -43,12 +43,12 @@ public class CommandState extends State {
 
         } catch (AutomationServerException ex) {
             try {
-                log.info(session.getClient() + " -> " + message.getOrigin(), ex);
+                log.info(session.getClient() + " -> " + message.getOrigin() + " ["+ex.getMessage()+"]");
                 message = new ErrorMessageBuilder().setException(ex).setOrigin(session.getClient()).build();
                 session.sendMessage(message.toByteArray());
 
             } catch (AutomationServerException ex2) {
-                log.error(ex2);
+                log.error(ex2.getMessage());
                 nextState = new FinalState(session);
             }
         }
