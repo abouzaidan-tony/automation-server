@@ -31,17 +31,13 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
         Session session = getSelfSessionById(origin.getId());
 
         boolean isBroadcast = message.getMessageType() == MessageType.BROADCAST;
+        boolean isEcho = message.getMessageType() == MessageType.ECHO;
 
-        if(isBroadcast) {
-            isBroadcast = true;
-            log.debug("Broadcast message from " + origin);
-        }
-        
-        if (message.getMessageType() == MessageType.ECHO) {
-            message.setOrigin(origin.getKey());
-            session.sendMessage(message.toByteArray());
+        Client c = null;
+
+        if (isEcho) {
+            c = origin;
         } else {
-            Client c = null;
             for (Client var : getCandidates(origin)) {
                 if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
                     c = var;
@@ -50,11 +46,10 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
                     processSingleMessage(message, c, origin, session);
                 }
             }
-
-            if (!isBroadcast)
-                processSingleMessage(message, c, origin, session);
-
         }
+
+        if (!isBroadcast)
+            processSingleMessage(message, c, origin, session);
     }
 
     private void processSingleMessage(Message message, Client c, Client origin, Session session)
