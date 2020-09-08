@@ -35,17 +35,14 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
         for (Client var : getCandidates(client)) {
             if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
                 c = var;
+                sendMessage(message, c, client);
                 if (!isBroadcast)
                     break;
-                sendMessage(message, c, client);
             }
         }
 
-        if (c == null)
+        if (c == null && !isBroadcast)
             throw new DeviceNotFoundException();
-
-        if (!isBroadcast)
-            sendMessage(message, c, client);
     }
 
     protected final void sendMessage(Message message, Client c, Client origin) throws AutomationServerException {
