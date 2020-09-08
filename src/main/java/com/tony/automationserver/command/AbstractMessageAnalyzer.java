@@ -35,9 +35,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
         Client c = null;
 
-        if (isEcho) {
-            c = origin;
-        } else {
+        if (!isEcho) {
             for (Client var : getCandidates(origin)) {
                 if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
                     c = var;
@@ -54,10 +52,9 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
     private void processSingleMessage(Message message, Client c, Client origin, Session session)
             throws AutomationServerException {
+
         try {
-
             sendMessage(message, c, origin);
-
         } catch (AutomationServerException ex) {
             log.info(origin + " -> " + message.getOrigin() + " [" + ex.getMessage() + "]");
             message = new ErrorMessageBuilder().setException(ex).setOrigin(origin).build();
@@ -67,11 +64,17 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
     protected final void sendMessage(Message message, Client c, Client origin) throws AutomationServerException {
 
-        if (c == null)
+        Session session;
+        if (message.getMessageType() == MessageType.ECHO) {
+            session = getSelfSessionById(origin.getId());
+            c = origin;
+        } else if (c != null)
+            session = getSessionById(c.getId());
+        else
             throw new DeviceNotFoundException();
 
         log.debug("Sending message from" + origin + " to " + c);
-        Session session = getSessionById(c.getId());
+
         message.setOrigin(c.getKey());
 
         if (session == null)
