@@ -33,7 +33,7 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
         Client c = null;
         for (Client var : getCandidates(client)) {
-            if (var.getKey().equals(message.getOrigin())) {
+            if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
                 c = var;
                 if (!isBroadcast)
                     break;
