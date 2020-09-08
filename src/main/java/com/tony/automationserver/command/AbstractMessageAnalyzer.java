@@ -30,11 +30,14 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
         Session session = getSelfSessionById(origin.getId());
 
-        boolean isBroadcast = false;
-        if (message.getMessageType() == MessageType.BROADCAST) {
+        boolean isBroadcast = message.getMessageType() == MessageType.BROADCAST;
+
+        if(isBroadcast) {
             isBroadcast = true;
             log.debug("Broadcast message from " + origin);
-        } else if (message.getMessageType() == MessageType.ECHO) {
+        }
+        
+        if (message.getMessageType() == MessageType.ECHO) {
             message.setOrigin(origin.getKey());
             session.sendMessage(message.toByteArray());
         } else {
