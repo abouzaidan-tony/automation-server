@@ -7,6 +7,7 @@ import com.tony.automationserver.client.Client;
 import com.tony.automationserver.exception.AutomationServerException;
 import com.tony.automationserver.exception.DeviceNotConnectedException;
 import com.tony.automationserver.exception.DeviceNotFoundException;
+import com.tony.automationserver.messages.ErrorMessageBuilder;
 import com.tony.automationserver.messages.Message;
 import com.tony.automationserver.messages.Message.MessageType;
 
@@ -21,46 +22,64 @@ public abstract class AbstractMessageAnalyzer implements MessageAnalyzer {
 
     public abstract Session getSessionById(long id);
 
+    public abstract Session getSelfSessionById(long id);
+
     @Override
     public void Process(Message message) throws AutomationServerException {
-        Client client = (Client) message.getClient();
+        Client origin = (Client) message.getClient();
+
+        Session session = getSelfSessionById(origin.getId());
 
         boolean isBroadcast = false;
         if (message.getMessageType() == MessageType.BROADCAST) {
             isBroadcast = true;
-            log.debug("Broadcast message from " + client);
-        }
-
-        Client c = null;
-        for (Client var : getCandidates(client)) {
-            if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
-                c = var;
-                sendMessage(message, c, client);
-                if (!isBroadcast)
-                    break;
+            log.debug("Broadcast message from " + origin);
+        } else if (message.getMessageType() == MessageType.ECHO) {
+            message.setOrigin(origin.getKey());
+            session.sendMessage(message.toByteArray());
+        } else {
+            Client c = null;
+            for (Client var : getCandidates(origin)) {
+                if (var.getKey().equals(message.getOrigin()) || isBroadcast) {
+                    c = var;
+                    if (!isBroadcast)
+                        break;
+                    processSingleMessage(message, c, origin, session);
+                }
             }
-        }
 
-        if (c == null && !isBroadcast)
-            throw new DeviceNotFoundException();
+            if (!isBroadcast)
+                processSingleMessage(message, c, origin, session);
+
+        }
+    }
+
+    private void processSingleMessage(Message message, Client c, Client origin, Session session)
+            throws AutomationServerException {
+        try {
+
+            sendMessage(message, c, origin);
+
+        } catch (AutomationServerException ex) {
+            log.info(origin + " -> " + message.getOrigin() + " [" + ex.getMessage() + "]");
+            message = new ErrorMessageBuilder().setException(ex).setOrigin(origin).build();
+            session.sendMessage(message.toByteArray());
+        }
     }
 
     protected final void sendMessage(Message message, Client c, Client origin) throws AutomationServerException {
+
+        if (c == null)
+            throw new DeviceNotFoundException();
+
         log.debug("Sending message from" + origin + " to " + c);
         Session session = getSessionById(c.getId());
+        message.setOrigin(c.getKey());
 
         if (session == null)
             throw new DeviceNotConnectedException();
 
         message.setOrigin(origin.getKey());
-            session.sendMessage(message.toByteArray());
-            // logger.error(ex.getMessage(), ex);
-    // Message m;
-    //     m = new ErrorMessageBuilder().setException(ex).setOrigin(origin).build();
-
-    // if (origin instanceof User)
-    //     ClientSession.getUserSessions().get(origin.getId()).sendMessage(m.toByteArray());
-    // else
-    //     ClientSession.getDevicesSessions().get(origin.getId()).sendMessage(m.toByteArray());
+        session.sendMessage(message.toByteArray());
     }
 }

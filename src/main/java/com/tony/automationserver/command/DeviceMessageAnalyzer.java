@@ -20,4 +20,9 @@ public class DeviceMessageAnalyzer extends AbstractMessageAnalyzer {
     public Session getSessionById(long id) {
         return ClientSession.getUserSessions().get(id);
     }
+
+    @Override
+    public Session getSelfSessionById(long id) {
+        return ClientSession.getDevicesSessions().get(id);
+    }
 }

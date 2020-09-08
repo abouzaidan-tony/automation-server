@@ -4,9 +4,7 @@ import com.tony.automationserver.ClientSession;
 import com.tony.automationserver.command.MessageAnalyzer;
 import com.tony.automationserver.exception.AutomationServerException;
 import com.tony.automationserver.messages.BufferMessageBuilder;
-import com.tony.automationserver.messages.ErrorMessageBuilder;
 import com.tony.automationserver.messages.Message;
-import com.tony.automationserver.messages.Message.MessageType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,25 +30,15 @@ public class CommandState extends State {
             message = new BufferMessageBuilder().setBuffer(data).setOrigin(session.getClient()).build();
 
             log.debug("Message Type [" + message.getMessageType() + "]");
-            if (message.getMessageType() == MessageType.ECHO) {
-                message.setOrigin(session.getClient().getKey());
-                session.sendMessage(message.toByteArray());
-            } else {
-                analyzer.Process(message);
-            }
+
+            analyzer.Process(message);
+
             message = null;
             log.debug("Message processing completed from [" + session.getClient().getKey() + "]");
 
         } catch (AutomationServerException ex) {
-            try {
-                log.info(session.getClient() + " -> " + message.getOrigin() + " ["+ex.getMessage()+"]");
-                message = new ErrorMessageBuilder().setException(ex).setOrigin(session.getClient()).build();
-                session.sendMessage(message.toByteArray());
-
-            } catch (AutomationServerException ex2) {
-                log.error(ex2.getMessage());
-                nextState = new FinalState(session);
-            }
+            log.error(ex.getMessage());
+            nextState = new FinalState(session);
         }
         return nextState;
     }
