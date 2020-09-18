@@ -18,7 +18,6 @@ public class SessionsThread extends PausableThread implements Comparable<Session
     private Iterator<Session> iterator;
     private Queue<Session> queue;
 
-
     private int length;
     private byte[] buffer = new byte[256];
     private int sleepTime = 2;
@@ -46,7 +45,7 @@ public class SessionsThread extends PausableThread implements Comparable<Session
     public void preProcess() {
         logger.info("Sessions Thread Started");
     }
-    
+
     @Override
     public void process() {
 
@@ -93,7 +92,8 @@ public class SessionsThread extends PausableThread implements Comparable<Session
                 if (!session.isRunning()) {
                     synchronized (this) {
                         iterator.remove();
-                        logger.debug(getName() + " removing session "+ session.getSessionName()+ ", new size " + queue.size());
+                        logger.debug(getName() + " removing session " + session.getSessionName() + ", new size "
+                                + sessions.size());
                     }
                     continue;
                 }
@@ -126,7 +126,7 @@ public class SessionsThread extends PausableThread implements Comparable<Session
                         session.getDataReceivedListener().OnDataReceived(buffer, length);
 
                 } catch (Exception ex) {
-                    logger.error(ex.getMessage());
+                    logger.error(ex.getMessage(), ex);
                     session.close();
                     iterator.remove();
                 }
@@ -134,7 +134,7 @@ public class SessionsThread extends PausableThread implements Comparable<Session
             } while (true);
 
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex.getMessage(), ex);
         }
 
         int existingLength = 0;

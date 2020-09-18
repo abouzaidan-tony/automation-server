@@ -35,7 +35,7 @@ public class AuthenticationState extends State {
         try {
             authLock.acquire();
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
 
         Client c = auth.Authenticate(data);
@@ -81,7 +81,7 @@ public class AuthenticationState extends State {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
         logger.warn("Authentication Attempt Failed");
         authLock.release();

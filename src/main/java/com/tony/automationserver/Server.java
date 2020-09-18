@@ -16,7 +16,7 @@ public class Server {
         try {
             run(args);
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex.getMessage(), ex);
         }
         logger.warn("Closing App");
         System.exit(0);

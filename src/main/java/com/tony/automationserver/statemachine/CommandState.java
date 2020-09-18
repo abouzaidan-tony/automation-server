@@ -37,7 +37,7 @@ public class CommandState extends State {
             log.debug("Message processing completed from [" + session.getClient().getKey() + "]");
 
         } catch (AutomationServerException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             nextState = new FinalState(session);
         }
         return nextState;

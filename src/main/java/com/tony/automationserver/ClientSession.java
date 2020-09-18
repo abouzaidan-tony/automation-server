@@ -77,7 +77,7 @@ public class ClientSession extends Session {
         try {
             EntityManager.GetInstance().persist(client);
         } catch (SQLException e) {
-            logger.error("Cannot update client status");
+            logger.error("Cannot update client status", e);
         }
         lock.release();
         client = null;

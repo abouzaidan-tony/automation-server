@@ -75,7 +75,7 @@ public class UserAuthenticator implements Authenticator<Client> {
         try {
             EntityManager.GetInstance().persist(d);
         } catch (SQLException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
             return null;
         }
 
