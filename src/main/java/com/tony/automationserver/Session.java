@@ -90,6 +90,7 @@ public abstract class Session implements OnMessageReadyListener {
         try {
             out.write(manager.formatStream(msg));
         } catch (IOException e) {
+            logger.error(e.getMessage(), e);
             close();
             throw new IOServerException(e);
         }

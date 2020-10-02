@@ -28,7 +28,7 @@ public abstract class Message {
 
     }
 
-    public final static String originServer = "00000";
+    public final static String originServer = "CLOUD";
 
     private final MessageType mType;
     protected byte[] buffer;

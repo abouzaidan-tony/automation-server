@@ -19,7 +19,7 @@ public class UserAuthenticator implements Authenticator<Client> {
 
     @Override
     public Client Authenticate(byte[] data) {
-        logger.debug("Authenticating Device");
+        logger.debug("Authenticating User");
         if (data.length != 36) {
             logger.debug("Invalid authentication data");
             return null;
