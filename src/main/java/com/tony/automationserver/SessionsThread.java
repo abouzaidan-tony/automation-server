@@ -7,12 +7,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.tony.automationserver.domain.Config;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SessionsThread extends PausableThread implements Comparable<SessionsThread> {
 
     private static Logger logger = LogManager.getLogger(SessionsThread.class);
+    private static Config config = Config.GetInstance();
 
     private LinkedList<Session> sessions;
     private Iterator<Session> iterator;
@@ -20,14 +23,16 @@ public class SessionsThread extends PausableThread implements Comparable<Session
 
     private int length;
     private byte[] buffer = new byte[256];
-    private int sleepTime = 2;
-    private int maxSleepTime = 3000;
+    private int sleepTime;
+    private int maxSleepTime;
     private int noDataCount = 0;
 
     public SessionsThread(SessionsThreadEvents sessionsThreadListener) {
         sessions = new LinkedList<>();
         queue = new LinkedList<>();
         setSessionsThreadListener(sessionsThreadListener);
+        maxSleepTime = config.getSessionMaxSleepTime();
+        sleepTime = config.getSessionMinSleepTime();
     }
 
     public synchronized void registerSession(Session s) {
@@ -149,8 +154,8 @@ public class SessionsThread extends PausableThread implements Comparable<Session
 
         if (sleepTime > maxSleepTime)
             sleepTime = maxSleepTime;
-        else if (sleepTime < 2)
-            sleepTime = 2;
+        else if (sleepTime < config.getSessionMinSleepTime())
+            sleepTime = config.getSessionMinSleepTime();
     }
 
     @Override

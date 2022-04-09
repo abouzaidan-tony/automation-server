@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.tony.automationserver.PausableThread.SessionsThreadEvents;
+import com.tony.automationserver.domain.Config;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SessionPool implements SessionsThreadEvents {
 
-    private static final int MAX_THREADS = 15;
+    private static Config config = Config.GetInstance();
+    private static final int MAX_THREADS = config.getMaxSessionThreadCount();
     private static Logger logger = LogManager.getLogger(SessionPool.class);
     private static SessionPool pool;
 
