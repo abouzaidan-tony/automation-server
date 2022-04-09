@@ -2,6 +2,7 @@ package com.tony.automationserver;
 
 import java.util.LinkedList;
 
+import com.tony.automationserver.domain.Config;
 import com.tony.automationserver.exception.AutomationServerException;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 public class SessionCleaner extends PausableThread {
 
     private static Logger log = LogManager.getLogger(SessionCleaner.class);
+    private static Config config = Config.GetInstance();
 
     private int sleepTime;
 
@@ -45,10 +47,10 @@ public class SessionCleaner extends PausableThread {
             sleepTime -= offlineSessions.size() * 100;
         }
 
-        if (sleepTime > 7000)
-            sleepTime = 7000;
-        else if (sleepTime < 2000)
-            sleepTime = 2000;
+        if (sleepTime > config.getSessionCleanerMaxSleepTime())
+            sleepTime = config.getSessionCleanerMaxSleepTime();
+        else if (sleepTime < config.getSessionCleanerMinSleepTime())
+            sleepTime = config.getSessionCleanerMinSleepTime();
 
         for (Session var : offlineSessions) {
             Session.sessions.remove(var);

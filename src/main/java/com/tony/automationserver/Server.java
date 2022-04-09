@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import com.tony.automationserver.domain.Config;
 import com.tony.sqlhelper.helper.SQLHelper;
 
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Server {
     private static Logger logger = LogManager.getLogger(Server.class);
+    private static Config config = Config.GetInstance();
 
     public static void main(String[] args) throws IOException {
         try {
@@ -31,7 +33,7 @@ public class Server {
         PausableThread cc = new CacheCleaner();
         PausableThread sc = new SessionCleaner();
 
-        ServerSocket listener = new ServerSocket(9909);
+        ServerSocket listener = new ServerSocket(config.getServerPort());
 
         SessionPool pool = SessionPool.getInstance(new PausableThread[] {cc, sc});
 
